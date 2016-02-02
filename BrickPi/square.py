@@ -7,9 +7,9 @@ def completesquare(diameter):
 		straight(diameter)
 		rotatedeg(90,0)
 
-def straight(diameter):
+def straight(drivedist):
 	diameter_rad_const = 1
-	angle = diameter * diameter_rad_const
+	angle = drivedist * diameter_rad_const
 	interface.increaseMotorAngleReferences(motors,[angle,angle])
 
 def rotatedeg(degrees,clockwise):
