@@ -1,6 +1,26 @@
 import brickpi
 import time
+import math
 
+def completesquare(diameter):
+	for i in range(0,3):
+		straight(diameter)
+		rotatedeg(90,0)
+
+def straight(diameter):
+	diameter_rad_const = 1
+	angle = diameter * diameter_rad_const
+	interface.increaseMotorAngleReferences(motors,[angle,angle])
+
+def rotatedeg(degrees,clockwise):
+	rads = degrees*pi/180
+	rotate_const = 1
+	angle = rads *  rotate_const
+	if clockwise == 1:
+		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
+	else:
+		interface.increaseMotorAngleReferences(motors,[angle,(-1*angle)])
+		
 interface=brickpi.Interface()
 interface.initialize()
 
@@ -24,22 +44,11 @@ interface.setMotorAngleControllerParameters(motors[0],motorParams)
 interface.setMotorAngleControllerParameters(motors[1],motorParams)
 
 while True:
-    decision = int(input("Option 0: Straight \n Option 1: Rotate \n ")
-	angle = float(input("Enter a angle to rotate (in radians): "))
-	interface.startLogging('logs/log' +str(motorParams.pidParameters.k_p) + '.txt')
-    
-    if decision == 0:
-        interface.increaseMotorAngleReferences(motors,[angle,angle])
-    else:
-   		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
-
-	while not interface.motorAngleReferencesReached(motors) :
-		motorAngles = interface.getMotorAngles(motors)
-		if motorAngles :
-			print "Motor angles: ", motorAngles[0][0], ", ", motorAngles[1][0]
-		time.sleep(0.2)
-
-	print "Destination reached! Allahu Akbar"
+	diameter = int(input("Enter square perimeter (in cm) \n "))
+	
+	completesquare(diameter)
+	
+	print "Enjoy your fucking square!"
 	interface.stopLogging()
 
 
