@@ -28,10 +28,10 @@ while True:
 	angle = float(input("Enter a angle to rotate (in radians): "))
 	interface.startLogging('logs/log' +str(motorParams.pidParameters.k_p) + '.txt')
     
-    if decision == 0:
-        interface.increaseMotorAngleReferences(motors,[angle,angle])
-    else:
-   		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
+	if decision == 0:
+		interface.increaseMotorAngleReferences(motors,[angle,angle])
+	else:
+		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
 
 	while not interface.motorAngleReferencesReached(motors) :
 		motorAngles = interface.getMotorAngles(motors)
