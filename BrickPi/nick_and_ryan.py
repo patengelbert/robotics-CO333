@@ -24,8 +24,14 @@ interface.setMotorAngleControllerParameters(motors[0],motorParams)
 interface.setMotorAngleControllerParameters(motors[1],motorParams)
 
 while True:
-	decision = int(input("Option 0: Straight \n Option 1: Rotate \n "))
-	angle = float(input("Enter a angle to rotate (in radians): "))
+	decision = int(input("Option 0: Straight \nOption 1: Rotate \n ")) 
+
+	if decision == 0:
+		angle = float(input("How far does Muhammad with to travel (in cm): "))
+		angle = angle * 0.35
+	else:
+		angle = float(input("How far does Muhammad want to spin (in radians): "))
+
 	interface.startLogging('logs/log' +str(motorParams.pidParameters.k_p) + '.txt')
     
 	if decision == 0:
@@ -39,7 +45,7 @@ while True:
 			print "Motor angles: ", motorAngles[0][0], ", ", motorAngles[1][0]
 		time.sleep(0.2)
 
-	print "Destination reached! Allahu Akbar"
+	print "Destination reached!"
 	interface.stopLogging()
 
 

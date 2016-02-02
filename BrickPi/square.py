@@ -8,7 +8,8 @@ def completesquare(diameter): # Draws a square
 		rotatedeg(90,0) #Corner
 
 def straight(drivedist): #  Drive in straight line in cm
-	drive_rad_const = 1 # Converts cm into wheel rotations
+	#35 rads per metre = 0.35 per cm
+	drive_rad_const = 0.35 # Converts cm into wheel rotations
 	angle = drivedist * drive_rad_const 
 	interface.increaseMotorAngleReferences(motors,[angle,angle])
 
