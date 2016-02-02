@@ -33,13 +33,18 @@ while True:
 		angle = float(input("How much does Muhammad want to spin (in rotations): "))
 		angle = angle * 19
 	
-    
+    # Setup Logging
+	logName = ('turn_' + str(angle) + 'rot') if decision else ('straight_' + str(angle) + 'cm') + '_' + str(motorParams.pidParameters.k_p) + '_' + str(motorParams.pidParameters.k_i) + '_' + str(motorParams.pidParameters.k_d) + '.log'
+	interface.startLogging('logs/' + logName)
+
 	if decision == 0:
 		interface.increaseMotorAngleReferences(motors,[angle,angle])
 	else:
 		motorParams.maxRotationAcceleration = 5.0
 		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
 		motorParams.maxRotationAcceleration = 10.0
+
+	interface.stopLogging()
 
 	print "Destination reached!"
 
