@@ -17,7 +17,7 @@ motorParams.minPWM = 18.0
 motorParams.pidParameters.minOutput = -255
 motorParams.pidParameters.maxOutput = 255
 motorParams.pidParameters.k_p = 120
-motorParams.pidParameters.k_i = 150
+motorParams.pidParameters.k_i = 130
 motorParams.pidParameters.k_d = 12
 
 interface.setMotorAngleControllerParameters(motors[0],motorParams)
