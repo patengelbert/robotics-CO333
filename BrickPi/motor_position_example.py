@@ -16,16 +16,15 @@ motorParams.feedForwardGain = 255/20.0
 motorParams.minPWM = 18.0
 motorParams.pidParameters.minOutput = -255
 motorParams.pidParameters.maxOutput = 255
-motorParams.pidParameters.k_p = 120
-motorParams.pidParameters.k_i = 150
-motorParams.pidParameters.k_d = 12
+motorParams.pidParameters.k_p = 100
+motorParams.pidParameters.k_i = 0
+motorParams.pidParameters.k_d = 0
 
 interface.setMotorAngleControllerParameters(motors[0],motorParams)
 interface.setMotorAngleControllerParameters(motors[1],motorParams)
 
 while True:
 	angle = float(input("Enter a angle to rotate (in radians): "))
-	interface.startLogging('logs/log' +str(motorParams.pidParameters.k_p) + '.txt')
 
 	interface.increaseMotorAngleReferences(motors,[angle,angle])
 
@@ -36,6 +35,5 @@ while True:
 		time.sleep(0.1)
 
 	print "Destination reached!"
-	interface.stopLogging()
 
 interface.terminate()
