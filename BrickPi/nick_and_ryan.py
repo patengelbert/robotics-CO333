@@ -28,22 +28,25 @@ while True:
 
 	if decision == 0:
 		angle = float(input("How far does Muhammad with to travel (in cm): "))
-		angle = angle * 0.35
+		angle = angle * 0.355
 	else:
-		angle = float(input("How far does Muhammad want to spin (in radians): "))
-
+		angle = float(input("How much does Muhammad want to spin (in rotations): "))
+		angle = angle / 21
+	
 	interface.startLogging('logs/log' +str(motorParams.pidParameters.k_p) + '.txt')
     
 	if decision == 0:
 		interface.increaseMotorAngleReferences(motors,[angle,angle])
 	else:
+		motorParams.maxRotationAcceleration = 5.0
 		interface.increaseMotorAngleReferences(motors,[(-1*angle),angle])
+		motorParams.maxRotationAcceleration = 10.0
 
-	while not interface.motorAngleReferencesReached(motors) :
-		motorAngles = interface.getMotorAngles(motors)
-		if motorAngles :
-			print "Motor angles: ", motorAngles[0][0], ", ", motorAngles[1][0]
-		time.sleep(0.2)
+	#while not interface.motorAngleReferencesReached(motors) :
+	#	motorAngles = interface.getMotorAngles(motors)
+	#	if motorAngles :
+	#		print "Motor angles: ", motorAngles[0][0], ", ", motorAngles[1][0]
+	#	time.sleep(0.1)
 
 	print "Destination reached!"
 	interface.stopLogging()

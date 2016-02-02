@@ -2,6 +2,9 @@ import brickpi
 import time
 import math
 
+global interface #Global variables
+global motors # Aka lazy programming
+
 def completesquare(diameter): # Draws a square
 	for i in range(0,3): 
 		straight(diameter) #Edge
@@ -39,8 +42,7 @@ def PIDparams():
 	interface.setMotorAngleControllerParameters(motors[0],motorParams)
 	interface.setMotorAngleControllerParameters(motors[1],motorParams)
 
-global interface #Global variables
-global motors
+#Main
 
 interface = brickpi.Interface() #Initialisation
 interface.initialize() 
