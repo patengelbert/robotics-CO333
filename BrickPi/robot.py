@@ -1,15 +1,25 @@
 import brickpi
 import math
 import time
+import ConfigParser
 
 class Motor:
-	threshold = 0.1
 
 	def __init__(self, interface, id):
 		self.interface = interface
 		self.id = id
 		self.motorParams = interface.MotorAngleControllerParameters()
+		self.threshold = 0.05
+		self.initConfig()
 		interface.motorEnable(id)
+
+	def initConfig(self):
+		config = ConfigParser.RawConfigParser()
+		config.optionxform = str
+		config.read('robot.cfg')
+		for (item, value) in config.items('Motor'):
+			setattr(self, item, value)
+		print "Motor " + str(self.id) + " Config loaded"
 
 	def setPID(self, p, i, d):
 		self.motorParams.pidParameters.k_p = p
@@ -27,12 +37,6 @@ class Motor:
 		return math.fabs(self.interface.getMotorAngleReferences([self.id])[0] - self.interface.getMotorAngle(self.id)[0]) > self.threshold
 
 class Robot:
-	powerL = 1
-	powerR = 1
-	rotatePower = 1
-
-	movementCoeff = 36.363636
-	botRadius = 0.08
 	
 	def initMotorParams(self, motorParams):
 		motorParams.maxRotationAcceleration = 10
@@ -41,14 +45,41 @@ class Robot:
 		motorParams.minPWM = 18
 		motorParams.pidParameters.minOutput = -255
 		motorParams.pidParameters.maxOutput = 255
+	
+	def initConfig(self):
+		config = ConfigParser.RawConfigParser()
+		config.optionxform = str
+		config.read('robot.cfg')
+		for (item, value) in config.items('Robot'):
+			setattr(self, item, float(value))
+		print "Robot config loaded"
+	
+	def setDefaults(self):
+	
+		# Default config values
+		self.powerL = 1
+		self.powerR = 1
+		self.rotatePower = 0.95
+
+		self.movementCoeff = 36.363636
+		self.botRadius = 0.08
+		
+		self.pidk_p = 600
+		self.pidk_i = 400
+		self.pidk_d = 20
 
 	def __init__(self):
+		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
 		self.motorL = Motor(self.interface, 0)
 		self.motorR = Motor(self.interface, 1)
 		self.initMotorParams(self.motorL.motorParams)
 		self.initMotorParams(self.motorR.motorParams)
+
+		self.initConfig()
+		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
+		
 
 	def __enter__(self):
 		return self
