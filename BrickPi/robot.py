@@ -33,6 +33,14 @@ class Robot:
 
 	movementCoeff = 0.36
 	botRadius = 0.16
+	
+	def initMotorParams(motorParams):
+		motorParams.maxRotationAcceleration = 10
+		motorParams.maxRotationSpeed = 20
+		motorParams.feedForwardGain = 255/20
+		motorParams.minPWM = 18
+		motorParams.pidParameters.minOutput = -255
+		motorParams.pidParameters.maxOutput = 255
 
 	def __init__(self):
 		self.interface = brickpi.Interface()
@@ -47,14 +55,6 @@ class Robot:
 
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.interface.terminate()
-	
-	def initMotorParams(motorParams):
-		motorParams.maxRotationAcceleration = 10
-		motorParams.maxRotationSpeed = 20
-		motorParams.feedForwardGain = 255/20
-		motorParams.minPWM = 18
-		motorParams.pidParameters.minOutput = -255
-		motorParams.pidParameters.maxOutput = 255
 	
 	def setPID(p, i, d):
 		motorL.setPID(p, i, d)
