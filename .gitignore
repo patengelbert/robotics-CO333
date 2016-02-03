@@ -63,3 +63,6 @@ BrickPi/DexterInd/BrickPi_Python/
 BrickPi/DexterInd/BrickPi_C/
 
 *.log
+
+# Backup files
+*~
