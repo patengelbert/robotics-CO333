@@ -24,14 +24,15 @@ class Motor:
 		interface.increaseMotorAngleReference(id, angle)
 
 	def isRotating():
-		return abs(interface.getMotorAngleReference(id) - interface.getMotorAngle(id)) > threshold
+		return math.abs(interface.getMotorAngleReference(id) - interface.getMotorAngle(id)) > threshold
 
 class Robot:
 	powerL = 1
 	powerR = 1
+	rotatePower = 1
 
-	wheelRadius = 0.05
-	botRadius = 1
+	movementCoeff = 0.36
+	botRadius = 0.16
 
 	def __init__(self):
 		self.interface = brickpi.Interface()
@@ -63,12 +64,12 @@ class Robot:
 		return motorL.isRotating() or motorR.isRotating()
 	
 	def move(distance):
-		wheel = (distance * (180/pi)) / wheelRadius;
+		wheel = (distance * (180/math.pi)) * movementCoeff;
 		motorL.rotate(powerL * wheel)
 		motorR.rotate(powerR * wheel)
 	
 	def rotate(angle):
-		wheel = angle * botRadius / wheelRadius
+		wheel = rotatePower * angle * botRadius * movementCoeff;
 		motorL.rotate( powerL * wheel)
 		motorR.rotate(-powerR * wheel)
 	
