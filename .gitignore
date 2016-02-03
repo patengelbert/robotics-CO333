@@ -58,8 +58,5 @@ docs/_build/
 # PyBuilder
 target/
 
-BrickPi/DexterInd/BrickPi_Python/
-
-BrickPi/DexterInd/BrickPi_C/
-
-logs/
+# Backup files
+*~
