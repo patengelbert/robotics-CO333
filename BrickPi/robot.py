@@ -18,7 +18,7 @@ class Motor:
 		config.optionxform = str
 		config.read('robot.cfg')
 		for (item, value) in config.items('Motor'):
-			setattr(self, item, value)
+			setattr(self, item, float(value))
 		print "Motor " + str(self.id) + " Config loaded"
 
 	def setPID(self, p, i, d):
@@ -31,7 +31,8 @@ class Motor:
 		self.interface.setMotorAngleControllerParameters(self.id, self.motorParams)
 
 	def rotate(self, angle):
-		self.interface.increaseMotorAngleReference(self.id, angle)
+		self.nextMove = angle
+		#self.interface.increaseMotorAngleReference(self.id, angle)
 
 	def isRotating(self):
 		return math.fabs(self.interface.getMotorAngleReferences([self.id])[0] - self.interface.getMotorAngle(self.id)[0]) > self.threshold
@@ -98,13 +99,17 @@ class Robot:
 		wheel = distance * self.movementCoeff;
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
+		self.startAction()
 	
 	def rotate(self, angle):
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff;
 		self.motorL.rotate( self.powerL * wheel)
 		self.motorR.rotate(-self.powerR * wheel)
+		self.startAction()
+
+	def startAction(self):
+		self.interface.increaseMotorAngleReferences([self.motorL.id, self.motorR.id], [self.motorL.nextMove, self.motorR.nextMove])
 	
 	def wait(self):
 		while self.isMoving():
 			time.sleep(0.1)
-
