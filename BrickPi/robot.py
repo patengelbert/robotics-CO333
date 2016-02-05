@@ -37,6 +37,17 @@ class Motor:
 	def isRotating(self):
 		return math.fabs(self.interface.getMotorAngleReferences([self.id])[0] - self.interface.getMotorAngle(self.id)[0]) > self.threshold
 
+class Sensor:
+	
+	def __init__(self, interface, id, port, sensor_type):
+		self.interface = interface
+		self.id = id
+		self.port = port
+		self.sensor_type = sensor_type
+		
+		interface.sensorEnable(port, sensor_type)
+	
+		
 class Robot:
 	
 	def initMotorParams(self, motorParams):
@@ -79,6 +90,7 @@ class Robot:
 		self.initMotorParams(self.motorR.motorParams)
 
 		self.initConfig()
+		self.touchSensor = Sensor(self.interface, 0, 1, brickpi.SensorType.SENSOR_TOUCH)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 	
 	def setLogging(self, log):
