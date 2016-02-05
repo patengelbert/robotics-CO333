@@ -80,7 +80,14 @@ class Robot:
 
 		self.initConfig()
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
-		
+	
+	def setLogging(self, log):
+		self.logging = log
+
+	def setLogName(self, optargs = None):
+		optargs = [optarg for optarg in optargs if optarg is not None]
+		optargs_str = '_'.join(str(optarg) for optarg in optargs)
+		self.logName = './logs/' + str(int(time.time())) +'_p' + str(self.pidk_p) + '_i' + str(self.pidk_i) + '_d' + str(self.pidk_d) + '_' + optargs_str + '.log'
 
 	def __enter__(self):
 		return self
@@ -99,13 +106,24 @@ class Robot:
 		wheel = distance * self.movementCoeff;
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
+		if self.logging:
+			self.setLogName(['move', distance])
+			self.interface.startLogging(self.logName)			
 		self.startAction()
+		if self.logging:
+			pass
+			self.interface.stopLogging()
 	
 	def rotate(self, angle):
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff;
 		self.motorL.rotate( self.powerL * wheel)
 		self.motorR.rotate(-self.powerR * wheel)
+		if self.logging:
+			self.setLogName(['turn', angle])
+			self.interface.startLogging(self.logName)			
 		self.startAction()
+		if self.logging:
+			self.interface.stopLogging()
 
 	def startAction(self):
 		self.interface.increaseMotorAngleReferences([self.motorL.id, self.motorR.id], [self.motorL.nextMove, self.motorR.nextMove])
