@@ -1,7 +1,9 @@
 import brickpi
 import math
 import time
-import ConfigParser
+
+from ConfigParser import RawConfigParser
+from events import Events
 
 class Motor:
 
@@ -14,7 +16,7 @@ class Motor:
 		interface.motorEnable(id)
 
 	def initConfig(self):
-		config = ConfigParser.RawConfigParser()
+		config = RawConfigParser()
 		config.optionxform = str
 		config.read('robot.cfg')
 		for (item, value) in config.items('Motor'):
@@ -46,8 +48,29 @@ class Sensor:
 		self.sensor_type = sensor_type
 		
 		interface.sensorEnable(port, sensor_type)
+
+	def check(self) = None
+
+class SensorManager:
+
+	def __init__(self):
+		self.sensors = {}
 	
-		
+	def registerSensor(self, Sensor sensor):
+		self.sensors[sensor.id] = sensor
+	
+	def unregisterSensor(self, id=None, Sensor sensor=None):	
+		if id is not None:
+			del self.sensors[id]
+		else if sensor is not None:
+			del self.sensors[sensor.id]
+
+	def checkSensors(self):
+		for sensor in self.sensors.values()
+			(event, arg) = sensor.check()
+			if event is not None:
+				event.on_event(arg)
+	
 class Robot:
 	
 	def initMotorParams(self, motorParams):
@@ -59,7 +82,7 @@ class Robot:
 		motorParams.pidParameters.maxOutput = 255
 	
 	def initConfig(self):
-		config = ConfigParser.RawConfigParser()
+		config = RawConfigParser()
 		config.optionxform = str
 		config.read('robot.cfg')
 		for (item, value) in config.items('Robot'):
