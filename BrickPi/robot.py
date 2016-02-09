@@ -27,9 +27,9 @@ class Motor:
 		self.motorParams.pidParameters.k_p = p
 		self.motorParams.pidParameters.k_i = i
 		self.motorParams.pidParameters.k_d = d
-		self.update()
+		self.updateParams()
 		
-	def update(self):
+	def updateParams(self):
 		self.interface.setMotorAngleControllerParameters(self.id, self.motorParams)
 
 	def rotate(self, angle):
@@ -41,9 +41,8 @@ class Motor:
 
 class Sensor:
 	
-	def __init__(self, interface, id, port, eventManager, sensorType):
+	def __init__(self, interface, port, eventManager, sensorType):
 		self.interface = interface
-		self.id = id
 		self.port = port
 		self.eventManager = eventManager
 		try:
@@ -60,10 +59,13 @@ class PushSensor(Sensor):
 	def __init__(self, position, *args, **kwargs):
 		self.position = position
 		super(PushSensor, self)__init__(*args, **kwargs)
+		self.value = False
 
 	def check(self):
-		#Add sensing code here
-		self.event.on_event(self.position)
+		cvalue = self.interface.getSensorValue(self.port)
+		if(self.value != cvalue):
+			self.event.on_event({'position':self.position, 'state':cvalue})
+			self.value = cvalue
 
 class EventManager:
 	
@@ -129,16 +131,18 @@ class Robot:
 		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
-		self.eventsManager = EventsManager()
+		self.eventManager = EventManager()
 		self.motorL = Motor(self.interface, 0)
 		self.motorR = Motor(self.interface, 1)
 		self.initMotorParams(self.motorL.motorParams)
 		self.initMotorParams(self.motorR.motorParams)
 
 		self.initConfig()
-		self.touchSensorL = PushSensor(interface=self.interface, id=0, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='left', eventsManger=self.eventsManager)
-		self.touchSensorR = PushSensor(interface=self.interface, id=1, port=2, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventsManger=self.eventsManager)
+		self.touchSensorL = PushSensor(interface=self.interface, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='left', eventManager=self.eventManager)
+		self.touchSensorR = PushSensor(interface=self.interface, port=2, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
+
+		self.eventManager.registerHandler(str(brickpi.SensorType.SENSOR_TOUCH), lambda params: print(str(params)));
 	
 	def setLogging(self, log):
 		self.logging = log
@@ -190,3 +194,10 @@ class Robot:
 	def wait(self):
 		while self.isMoving():
 			time.sleep(0.1)
+
+	def mainLoop(self):
+		while True:
+			self.touchSensorL.check()
+			self.touchSensorR.check()
+
+			
