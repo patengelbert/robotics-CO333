@@ -4,6 +4,7 @@ import time
 
 from ConfigParser import RawConfigParser
 from events import Events as Event
+from __future__ import print_function
 
 class Motor:
 
@@ -21,7 +22,7 @@ class Motor:
 		config.read('robot.cfg')
 		for (item, value) in config.items('Motor'):
 			setattr(self, item, float(value))
-		print "Motor " + str(self.id) + " Config loaded"
+		print("Motor " + str(self.id) + " Config loaded")
 
 	def setPID(self, p, i, d):
 		self.motorParams.pidParameters.k_p = p
@@ -49,16 +50,17 @@ class Sensor:
 			self.event = Event()
 			self.eventManager.registerEvent(str(self.sensorType), self.event)
 		except KeyError as e:
-			self.event = eventManager.getEvent(str(self.sensorType)
+			self.event = eventManager.getEvent(str(self.sensorType))
 		interface.sensorEnable(port, self.sensorType)
 
-	def check(self) = None
+	def check(self):
+		pass
 
 class PushSensor(Sensor):
 
 	def __init__(self, position, *args, **kwargs):
 		self.position = position
-		super(PushSensor, self)__init__(*args, **kwargs)
+		super(PushSensor, self).__init__(*args, **kwargs)
 		self.value = False
 
 	def check(self):
@@ -111,7 +113,7 @@ class Robot:
 		config.read('robot.cfg')
 		for (item, value) in config.items('Robot'):
 			setattr(self, item, float(value))
-		print "Robot config loaded"
+		print("Robot config loaded")
 	
 	def setDefaults(self):
 	
@@ -142,7 +144,7 @@ class Robot:
 		self.touchSensorR = PushSensor(interface=self.interface, port=2, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.eventManager.registerHandler(str(brickpi.SensorType.SENSOR_TOUCH), lambda params: print(str(params)));
+		self.eventManager.registerHandler(str(brickpi.SensorType.SENSOR_TOUCH), lambda params: print(str(params)))
 	
 	def setLogging(self, log):
 		self.logging = log
@@ -174,7 +176,6 @@ class Robot:
 			self.interface.startLogging(self.logName)			
 		self.startAction()
 		if self.logging:
-			pass
 			self.interface.stopLogging()
 	
 	def rotate(self, angle):
