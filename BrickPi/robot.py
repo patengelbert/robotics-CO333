@@ -3,7 +3,7 @@ import math
 import time
 
 from ConfigParser import RawConfigParser
-from events import Events
+from events import Events as Event
 
 class Motor:
 
@@ -41,35 +41,57 @@ class Motor:
 
 class Sensor:
 	
-	def __init__(self, interface, id, port, sensor_type):
+	def __init__(self, interface, id, port, eventManager, sensorType):
 		self.interface = interface
 		self.id = id
 		self.port = port
-		self.sensor_type = sensor_type
-		
-		interface.sensorEnable(port, sensor_type)
+		self.eventManager = eventManager
+		try:
+			self.event = Event()
+			self.eventManager.registerEvent(str(self.sensorType), self.event)
+		except KeyError as e:
+			self.event = eventManager.getEvent(str(self.sensorType)
+		interface.sensorEnable(port, self.sensorType)
 
 	def check(self) = None
 
-class SensorManager:
+class PushSensor(Sensor):
 
+	def __init__(self, position, *args, **kwargs):
+		self.position = position
+		super(PushSensor, self)__init__(*args, **kwargs)
+
+	def check(self):
+		#Add sensing code here
+		self.event.on_event(self.position)
+
+class EventManager:
+	
 	def __init__(self):
-		self.sensors = {}
+		self.events = {}
 	
-	def registerSensor(self, Sensor sensor):
-		self.sensors[sensor.id] = sensor
+	def getEventList(self):
+		return self.events.keys()
 	
-	def unregisterSensor(self, id=None, Sensor sensor=None):	
-		if id is not None:
-			del self.sensors[id]
-		else if sensor is not None:
-			del self.sensors[sensor.id]
+	def getEvent(self, name):
+		if self.events.get(name) is None:
+			raise KeyError('Event %s has not been registered'% name)
+		return self.events[name]
+	
+	def registerEvent(self, name, event):
+		if self.events.get(name) is not None:
+			raise KeyError('Event %s has already been registered'% name)
+		self.events[name] = event
 
-	def checkSensors(self):
-		for sensor in self.sensors.values()
-			(event, arg) = sensor.check()
-			if event is not None:
-				event.on_event(arg)
+	def unregisterEvent(self, name):
+		if self.events.get(name) is None:
+			raise KeyError('Event %s has not been registered'% name)
+		self.events.pop(name)
+
+	def registerHandler(self, name, handler):
+		if self.events.get(name) is None:
+			raise KeyError('Event %s has not been registered'% name)
+		self.events[name] += handler		
 	
 class Robot:
 	
@@ -107,13 +129,15 @@ class Robot:
 		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
+		self.eventsManager = EventsManager()
 		self.motorL = Motor(self.interface, 0)
 		self.motorR = Motor(self.interface, 1)
 		self.initMotorParams(self.motorL.motorParams)
 		self.initMotorParams(self.motorR.motorParams)
 
 		self.initConfig()
-		self.touchSensor = Sensor(self.interface, 0, 1, brickpi.SensorType.SENSOR_TOUCH)
+		self.touchSensorL = PushSensor(interface=self.interface, id=0, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='left', eventsManger=self.eventsManager)
+		self.touchSensorR = PushSensor(interface=self.interface, id=1, port=2, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventsManger=self.eventsManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 	
 	def setLogging(self, log):
