@@ -6,6 +6,8 @@ import time
 from ConfigParser import RawConfigParser
 from events import Events as Event
 
+from eventTypes import EventTypes, EventStates
+
 class Motor:
 
 	def __init__(self, interface, id):
@@ -49,26 +51,27 @@ class Sensor(object):
 		self.sensorType = sensorType
 		try:
 			self.event = Event()
-			self.eventManager.registerEvent(str(self.sensorType), self.event)
+			self.eventManager.registerEvent(self.eventType, self.event)
 		except KeyError as e:
-			self.event = eventManager.getEvent(str(self.sensorType))
+			self.event = eventManager.getEvent(self.eventType)
 		interface.sensorEnable(port, self.sensorType)
 
 	def check(self):
-		pass
+		raise NotImplementedError()
 
 class PushSensor(Sensor):
 
 	def __init__(self, position, *args, **kwargs):
 		self.position = position
+		self.eventType = EventTypes.SENSOR_TOUCH
 		super(PushSensor, self).__init__(*args, **kwargs)
-		self.value = 0
+		self.state = EventStates.SENSOR_TOUCH_UP
 
 	def check(self):
-		cvalue = self.interface.getSensorValue(self.port)[0]
-		if(self.value != cvalue):
+		cvalue = EventStates.SENSOR_TOUCH_DOWN if self.interface.getSensorValue(self.port)[0] else EventStates.SENSOR_TOUCH_UP
+		if cvalue != self.state:
+			self.state = cvalue
 			self.event.on_change({'position':self.position, 'state':cvalue})
-			self.value = cvalue
 
 class EventManager:
 	
@@ -145,7 +148,7 @@ class Robot:
 		self.touchSensorR = PushSensor(interface=self.interface, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.eventManager.registerHandler(str(brickpi.SensorType.SENSOR_TOUCH), lambda params: print(str(params)))
+		self.eventManager.registerHandler(EventTypes.SENSOR_TOUCH, lambda params: print(str(params)))
 	
 	def setLogging(self, log):
 		self.logging = log
