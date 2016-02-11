@@ -4,9 +4,10 @@ import math
 import time
 
 from ConfigParser import RawConfigParser
-from events import Events as Event
 
-from eventTypes import EventTypes, EventStates
+#from events import Events as Event
+
+#from eventTypes import EventTypes, EventStates
 
 class Motor:
 
@@ -144,11 +145,11 @@ class Robot:
 		self.initMotorParams(self.motorR.motorParams)
 
 		self.initConfig()
-		self.touchSensorL = PushSensor(interface=self.interface, port=0, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='left', eventManager=self.eventManager)
-		self.touchSensorR = PushSensor(interface=self.interface, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
+#		self.touchSensorL = PushSensor(interface=self.interface, port=0, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='left', eventManager=self.eventManager)
+#		self.touchSensorR = PushSensor(interface=self.interface, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.eventManager.registerHandler(EventTypes.SENSOR_TOUCH, lambda params: print(str(params)))
+#		self.eventManager.registerHandler(EventTypes.SENSOR_TOUCH, lambda params: print(str(params)))
 	
 	def setLogging(self, log):
 		self.logging = log
@@ -175,12 +176,12 @@ class Robot:
 		wheel = distance * self.movementCoeff;
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
-		if self.logging:
-			self.setLogName(['move', distance])
-			self.interface.startLogging(self.logName)			
-		self.startAction()
-		if self.logging:
-			self.interface.stopLogging()
+		#if self.logging:
+		#	self.setLogName(['move', distance])
+		#	self.interface.startLogging(self.logName)			
+		#self.startAction()
+		#if self.logging:
+		#	self.interface.stopLogging()
 	
 	def rotate(self, angle):
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff;
