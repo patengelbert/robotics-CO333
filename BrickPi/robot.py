@@ -135,6 +135,22 @@ class Robot:
 		self.pidk_p = 600
 		self.pidk_i = 100
 		self.pidk_d = 20
+	
+	def sensorAction(self):
+		self.wait()
+		# function triggered by the event handler when the touchsensor values are changed.
+		if (self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN) and (self.touchSensorR.getState() == EventStates.SENSOR_TOUCH_DOWN) :
+			self.move(-20)
+			self.wait()
+			self.rotate(self, 90)
+		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, 45)
+		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, -45)
 
 	def __init__(self):
 		self.setDefaults()
@@ -219,21 +235,7 @@ class Robot:
 			self.touchSensorL.check()
 			self.touchSensorR.check()
 
-	def sensorAction(self):
-		self.wait()
-		# function triggered by the event handler when the touchsensor values are changed.
-		if (self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN) and (self.touchSensorR.getState() == EventStates.SENSOR_TOUCH_DOWN) :
-			self.move(-20)
-			self.wait()
-			self.rotate(self, 90)
-		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
-			self.move(-10)
-			self.wait()
-			self.rotate(self, 45)
-		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
-			self.move(-10)
-			self.wait()
-			self.rotate(self, -45)
+
 		
 
 			
