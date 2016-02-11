@@ -222,7 +222,7 @@ class Robot:
 	def sensorAction(self):
 		self.wait()
 		# function triggered by the event handler when the touchsensor values are changed.
-		if self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN && self.touchSensorR.getState() == EventStates.SENSOR_TOUCH_DOWN :
+		if (self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN) and (self.touchSensorR.getState() == EventStates.SENSOR_TOUCH_DOWN) :
 			self.move(-20)
 			self.wait()
 			self.rotate(self, 90)
