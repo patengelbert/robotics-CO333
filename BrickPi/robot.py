@@ -4,6 +4,7 @@ import math
 import time
 
 from ConfigParser import RawConfigParser
+
 from events import Events as Event
 
 from eventTypes import EventTypes, EventStates
@@ -123,7 +124,6 @@ class Robot:
 		print("Robot config loaded")
 	
 	def setDefaults(self):
-	
 		# Default config values
 		self.powerL = 1
 		self.powerR = 1
@@ -179,12 +179,12 @@ class Robot:
 		wheel = distance * self.movementCoeff;
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
-		if self.logging:
-			self.setLogName(['move', distance])
-			self.interface.startLogging(self.logName)			
-		self.startAction()
-		if self.logging:
-			self.interface.stopLogging()
+		#if self.logging:
+		#	self.setLogName(['move', distance])
+		#	self.interface.startLogging(self.logName)			
+		#self.startAction()
+		#if self.logging:
+		#	self.interface.stopLogging()
 	
 	def rotate(self, angle):
 		# angle specified in degrees

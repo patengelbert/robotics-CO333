@@ -1,3 +1,5 @@
+# encoding=utf8
+
 from robot import Robot
 import brickpi
 import time
@@ -8,19 +10,22 @@ sensor_left_side = bool(input("Which way is the sensor pointing?\nRight:0\nLeft:
 print("Wall Following Initiated (Ctrl+C to close)")
 robot = Robot()
 
-port = 0 # port which ultrasoic sensor is plugged in to
+port = 2 # port which ultrasoic sensor is plugged in to
 robot.interface.sensorEnable(port, brickpi.SensorType.SENSOR_ULTRASONIC);
-turn_gain = 3/100 #Fine Tuning Required. Max distance from wall is 30 + (turn_gain^-1)
+turn_gain = 3/100 #Fine Tuning Required. Max distance from wall is 30 + (turn_gain-1)
 
 while True:
-	sensor_distance = interface.getSensorValue(port)
-	if  abs((sensor_distance-30)*turn_gain) <=1:
+	sensor_distance_h = robot.interface.getSensorValue(port)
+	sensor_distance= sensor_distance_h[0]
+	print "Sensor Distance: ",sensor_distance
+	if  (abs((sensor_distance-30)*turn_gain)) <=1:
 		if sensor_left_side:
-			robot.arcPath(turn_gain*(sensor_distance−30)) #arcPath(theta) where theta <1
+			robot.arcPath(turn_gain*(sensor_distance-30))
 		else:
-			robot.arcPath(turn_gain*(-1*(sensor_distance−30)))
+			robot.arcPath(turn_gain*(30-sensor_distance))
+		print  "Robot.move reached"
 		robot.move(0.1)
-		time.sleep(0.05)
+		robot.wait()
 	else:
 		print("Too far from the wall")
 		robot.arcPath(0)
