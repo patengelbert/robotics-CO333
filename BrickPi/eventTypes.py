@@ -1,6 +1,6 @@
 from enum import Enum
 
-def EventTypes(Enum):
+def EventTypes():
 	SENSOR_TOUCH = 100
 	SENSOR_ULTRASOUND = 101
 	SENSOR_LIGHT = 102
@@ -8,6 +8,6 @@ def EventTypes(Enum):
 	WHEEL_POSITION_REACHED = 200
 
 # All values above 1000 are reserved for states
-def EventStates(Enum):
+def EventStates():
 	SENSOR_TOUCH_DOWN = 1000
 	SENSOR_TOUCH_UP = 1001

@@ -71,7 +71,10 @@ class PushSensor(Sensor):
 		cvalue = EventStates.SENSOR_TOUCH_DOWN if self.interface.getSensorValue(self.port)[0] else EventStates.SENSOR_TOUCH_UP
 		if cvalue != self.state:
 			self.state = cvalue
-			self.event.on_change({'position':self.position, 'state':cvalue})
+			self.event.on_change() 
+
+	def getState(self):
+		return self.state
 
 class EventManager:
 	
@@ -148,7 +151,7 @@ class Robot:
 		self.touchSensorR = PushSensor(interface=self.interface, port=1, sensorType=brickpi.SensorType.SENSOR_TOUCH, position='right', eventManager=self.eventManager)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.eventManager.registerHandler(EventTypes.SENSOR_TOUCH, lambda params: print(str(params)))
+		self.eventManager.registerHandler(EventTypes.SENSOR_TOUCH, sensorAction)
 	
 	def setLogging(self, log):
 		self.logging = log
@@ -172,6 +175,7 @@ class Robot:
 		return self.motorL.isRotating() or self.motorR.isRotating()
 	
 	def move(self, distance):
+		# distance specified in metres
 		wheel = distance * self.movementCoeff;
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
@@ -183,6 +187,7 @@ class Robot:
 			self.interface.stopLogging()
 	
 	def rotate(self, angle):
+		# angle specified in degrees
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff;
 		self.motorL.rotate( self.powerL * wheel)
 		self.motorR.rotate(-self.powerR * wheel)
@@ -210,9 +215,25 @@ class Robot:
 		while self.isMoving():
 			time.sleep(0.1)
 
-	def mainLoop(self):
-		while True:
+	def checkSensors(self):
 			self.touchSensorL.check()
 			self.touchSensorR.check()
+
+	def sensorAction(self):
+		self.wait()
+		# function triggered by the event handler when the touchsensor values are changed.
+		if self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN && self.touchSensorR.getState() == EventStates.SENSOR_TOUCH_DOWN :
+			self.move(-20)
+			self.wait()
+			self.rotate(self, 90)
+		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, 45)
+		elif self.touchSensorL.getState() == EventStates.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, -45)
+		
 
 			
