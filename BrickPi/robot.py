@@ -130,7 +130,7 @@ class Robot:
 		self.botRadius = 0.08
 		
 		self.pidk_p = 600
-		self.pidk_i = 400
+		self.pidk_i = 100
 		self.pidk_d = 20
 
 	def __init__(self):
@@ -192,6 +192,16 @@ class Robot:
 		self.startAction()
 		if self.logging:
 			self.interface.stopLogging()
+
+	def arcPath(self, theta):
+		# theta = 0 returns to straight path
+		# Positive theta => too far to the right => turn left
+		if theta <= 0 :
+			self.powerL = 1 
+			self.powerR = 1 + theta
+		else: 		
+			self.powerL = 1 - theta
+			self.powerR = 1 
 
 	def startAction(self):
 		self.interface.increaseMotorAngleReferences([self.motorL.id, self.motorR.id], [self.motorL.nextMove, self.motorR.nextMove])

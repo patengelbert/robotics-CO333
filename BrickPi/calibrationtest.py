@@ -25,6 +25,3 @@ while(1):
 			robot.wait()
 			robot.rotate(-90)
 			robot.wait()
-
-
-			
