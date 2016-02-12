@@ -7,27 +7,46 @@ from eventTypes import EventType, EventState
 from motor import Motor
 from sensor import PushSensor #, UltrasonicSensor
 
+"""
+A much simplified event handler class. Just add events and raise them by name
+"""
 class Events:
 	data = {}
 	
+	"""
+	Adds an event to the list identified by `name`.
+	When `invoke(name, params)` is called, every event added with this
+	function will be called with `event(params)`. `params` is typically
+	a dictionary with named values, such as 'position', 'state' etc.
+	"""
 	def add(name, event):
 		if data.get(name) is None:
 			data[name] = [event]
 		else:
 			data[name].add(event)
 
+	"""
+	Raises the event identified by `name`
+	e.g. a sensor might call `invoke(SENSOR_TYPE_FOO, {'value':self.value})`
+	"""
 	def invoke(name, params):
 		if data.get(name) is None:
 			return
 		for handler in data.get(name):
 			handler(params)
-	
+
+"""
+Main robot class
+"""	
 class Robot:
 
 	######################
 	### Initialisation ###
 	######################
 
+	"""
+	Sets up the standard motor parameters (excluding PID values)
+	"""
 	def initMotorParams(self, motorParams):
 		motorParams.maxRotationAcceleration = 10
 		motorParams.maxRotationSpeed = 20
@@ -36,6 +55,9 @@ class Robot:
 		motorParams.pidParameters.minOutput = -255
 		motorParams.pidParameters.maxOutput = 255
 	
+	"""
+	Reads robot configuration from the config file
+	"""
 	def initConfig(self):
 		config = RawConfigParser()
 		config.optionxform = str
@@ -44,16 +66,24 @@ class Robot:
 			setattr(self, item, float(value))
 		print("Robot config loaded")
 	
+	"""
+	Sets default configuration values - call this before `initConfig`
+	"""
 	def setDefaults(self):
-		# Default config values
+		# The time between successive `check` calls
 		self.deltaTime = 0.1
+		# Overall power coefficient to the motors
 		self.powerL = 1
 		self.powerR = 1
+		# Overall coefficient for rotation
 		self.rotatePower = 0.95
 
+		# Number of radians to one metre of movement
 		self.movementCoeff = 36.363636
+		# The centre-to-wheel distance of the robot
 		self.botRadius = 0.08
 		
+		# Motor PID values
 		self.pidk_p = 600
 		self.pidk_i = 100
 		self.pidk_d = 20
@@ -71,17 +101,25 @@ class Robot:
 		self.initConfig()
 		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
+		Bumper(events)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.events.add(EventType.SENSOR_TOUCH, sensorAction)
+		self.events.add(EventType.SENSOR_TOUCH, lambda params: if params['position'] == 'either' and params['down'] == True: sensorAction())
 	
 	###############
 	### Logging ###
 	###############
 
+	"""
+	Set whether to enable logging
+	"""
 	def setLogging(self, log):
 		self.logging = log
 
+	"""
+	Starts logging on the current interface
+	`optargs` is a list of identifying values for the log file name
+	"""
 	def startLogging(self, optargs):
 		if self.logging:
 			optargs = [optarg for optarg in optargs if optarg is not None]
@@ -93,9 +131,11 @@ class Robot:
 				str(self.pidk_d) + '_' + optargs_str + '.log'
 			self.interface.startLogging(self.logName)
 
+	"""
+	Stops all logging
+	"""
 	def stopLogging(self):
-		if self.logging:
-			self.interface.stopLogging()
+		self.interface.stopLogging()
 
 	########################
 	### 'with' statement ###
@@ -111,13 +151,22 @@ class Robot:
 	### Motor control ###
 	#####################
 	
+	"""
+	Sets PID values for all motors
+	"""
 	def setPID(self, p, i, d):
 		self.motorL.setPID(p, i, d)
 		self.motorR.setPID(p, i, d)
 	
+	"""
+	Whether any of the motors are rotating
+	"""
 	def isMoving(self):
 		return self.motorL.isRotating() or self.motorR.isRotating()
 
+	"""
+	Moves the given distance forwards or backwards
+	"""
 	def move(self, distance):
 		# distance specified in metres
 		wheel = distance * self.movementCoeff
@@ -126,6 +175,9 @@ class Robot:
 		self.motorR.rotate(self.powerR * wheel)
 		self.stopLogging()
 	
+	"""
+	Rotates the whole robot by the given angle clockwise
+	"""
 	def rotate(self, angle):
 		# angle specified in degrees
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff
@@ -144,6 +196,9 @@ class Robot:
 			self.powerL = 1 - theta
 			self.powerR = 1 
 	
+	"""
+	Blocks the program until the robot stops moving
+	"""
 	def wait(self):
 		while self.isMoving():
 			time.sleep(self.deltaTime)
@@ -152,6 +207,10 @@ class Robot:
 	### Sensor control ###
 	######################
 
+	"""
+	Starts the main loop, checking sensors and responding to events until
+	`running` is false
+	"""
 	def mainLoop(self):
 		self.running = True
 		while self.running:
