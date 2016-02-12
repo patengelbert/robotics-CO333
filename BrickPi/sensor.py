@@ -23,7 +23,6 @@ class PushSensor(Sensor):
 
 	def __init__(self, position, *args, **kwargs):
 		self.position = position
-		self.eventType = EventType.SENSOR_TOUCH
 		super(PushSensor, self).__init__(*args, **kwargs)
 		self.state = False
 
@@ -40,10 +39,18 @@ class PushSensor(Sensor):
 Single ultrasonic sensor
 """
 class UltraSonicSensor(Sensor):
-
 	def __init__(self, *args, **kwargs):
-		self.eventType = EventType.SENSOR_TOUCH
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
+		self.value
+
+	def check(self):
+		ivalue = self.interface.getSensorValue(self.port)[0]
+		if(self.value != ivalue):
+			self.value = ivalue
+			cvalue = float('inf')
+			if(ivalue < 255):
+				cvalue = (ivalue - 7)/100.0
+			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
 
 """
 Implements the 'either' and 'both' positions for two touch sensors

@@ -58,6 +58,12 @@ class Motor:
 		- self.interface.getMotorAngle(self.id)[0]) > self.threshold
 
 	"""
+	Sets the motor to the given speed in radians/second
+	"""
+	def setSpeed(self, speed):
+		self.interface.setMotorRotationSpeedReferences([self.id], [speed])
+	
+	"""
 	Calls events as necessary
 	"""
 	def check(self):

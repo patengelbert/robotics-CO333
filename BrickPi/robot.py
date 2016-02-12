@@ -103,6 +103,7 @@ class Robot:
 		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		Bumper(self.events)
+		UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASOUND)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
 		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
@@ -186,6 +187,10 @@ class Robot:
 		self.motorL.rotate( self.powerL * wheel)
 		self.motorR.rotate(-self.powerR * wheel)
 		self.stopLogging()
+
+	def drive(self, speedL, speedR):
+		self.motorL.setSpeed(speedL)
+		self.motorR.setSpeed(speedR)
 
 	def arcPath(self, theta):
 		# theta = 0 returns to straight path
