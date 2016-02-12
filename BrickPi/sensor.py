@@ -29,3 +29,15 @@ class PushSensor(Sensor):
 
 	def getState(self):
 		return self.state
+
+class UltraSonicSensor(Sensor):
+
+	def __init__(self, *args, **kwargs)
+		self.eventType = EventType.SENSOR_TOUCH
+		super(UltraSonicSensor, self).__init__(*args, **kwargs)
+		
+	
+	
+		
+			
+		

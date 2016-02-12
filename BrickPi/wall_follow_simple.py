@@ -1,10 +1,10 @@
-# encoding=utf8
-
 from robot import Robot
 import brickpi
 import time
 
-#Lab 2 Wall Following -- Simplified as there's no fucking mention of the word event in the entirity of the bleeding handout.
+"""
+Lab 2 Wall Following -- Simplified as there's no fucking mention of the word event in the entirity of the bleeding handout.
+"""
 
 sensor_left_side = bool(input("Which way is the sensor pointing?\nRight:0\nLeft:1\n"))
 print("Wall Following Initiated (Ctrl+C to close)")
