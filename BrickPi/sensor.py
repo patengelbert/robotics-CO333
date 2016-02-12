@@ -41,10 +41,11 @@ Single ultrasonic sensor
 class UltraSonicSensor(Sensor):
 	def __init__(self, *args, **kwargs):
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
-		self.value
+		self.value = 0
 
 	def check(self):
 		ivalue = self.interface.getSensorValue(self.port)[0]
+		print ivalue
 		if(self.value != ivalue):
 			self.value = ivalue
 			cvalue = float('inf')

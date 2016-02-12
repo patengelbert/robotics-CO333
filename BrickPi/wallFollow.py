@@ -7,6 +7,7 @@ def clamp(value, min, max):
 		return min
 	elif(value > max):
 		return max
+	return value
 
 class WallFollow:
 	
@@ -21,15 +22,19 @@ class WallFollow:
 	def start(self):
 		self.events.add(EventType.SENSOR_ULTRASOUND, self.onUltrasound)
 
-	def deltaFunction(d):
+	def deltaFunction(self, d):
 		return clamp(d, -1, 1)
 
 	def onUltrasound(self, params):
-		self.motorBias = deltaFunction(params['distance'] - self.followDistance)
+		#if(params['distance'] == None):
+		#	return
+		self.motorBias = self.deltaFunction(params['distance'] - self.followDistance)
+		print self.motorBias
 		robot.drive(self.speedCoeff * (1 + self.motorBias)/2, self.speedCoeff * (1 - self.motorBias)/2)
 
 if __name__ == '__main__':
 	robot = Robot()
-	WallFollow(robot, robot.event)
+	wallFollow = WallFollow(robot, robot.events)
+	wallFollow.start()
 	robot.mainLoop()
 

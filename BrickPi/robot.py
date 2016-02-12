@@ -5,7 +5,7 @@ import time
 from ConfigParser import RawConfigParser
 from eventTypes import EventType, EventState
 from motor import Motor
-from sensor import PushSensor, Bumper #, UltrasonicSensor
+from sensor import PushSensor, Bumper , UltraSonicSensor
 
 """
 A much simplified event handler class. Just add events and raise them by name
@@ -103,7 +103,7 @@ class Robot:
 		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		Bumper(self.events)
-		UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASOUND)
+		self.ultraSonic = UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASONIC)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
 		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
@@ -222,6 +222,7 @@ class Robot:
 		while self.running:
 			self.touchSensorL.check()
 			self.touchSensorR.check()
+			self.ultraSonic.check()
 			self.motorL.check()
 			self.motorR.check()
 			time.sleep(self.deltaTime)

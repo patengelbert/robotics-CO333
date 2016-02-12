@@ -15,6 +15,7 @@ class Motor:
 		self.motorParams = interface.MotorAngleControllerParameters()
 		self.threshold = 0.05 # 'Close enough' angle
 		self.initConfig()
+		self.wasRotating = False
 		interface.motorEnable(id)
 
 	"""
