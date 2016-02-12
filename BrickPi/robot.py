@@ -5,7 +5,7 @@ import time
 from ConfigParser import RawConfigParser
 from eventTypes import EventType, EventState
 from motor import Motor
-from sensor import PushSensor #, UltrasonicSensor
+from sensor import PushSensor, Bumper #, UltrasonicSensor
 
 """
 A much simplified event handler class. Just add events and raise them by name
@@ -104,7 +104,7 @@ class Robot:
 		Bumper(events)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.events.add(EventType.SENSOR_TOUCH, sensorAction)
+		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
 	
 	###############
 	### Logging ###
