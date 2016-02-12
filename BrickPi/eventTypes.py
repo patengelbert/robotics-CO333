@@ -1,17 +1,10 @@
-from enum import Enum
+class Enum(set):
+    def __getattr__(self, name):
+        if name in self:
+            return name
+        raise AttributeError
 
-#def EventTypes():
-#	SENSOR_TOUCH = 100
-#	SENSOR_ULTRASOUND = 101
-#	SENSOR_LIGHT = 102
+EventType = Enum(["SENSOR_TOUCH", "SENSOR_ULTRASOUND", "SENSOR_LIGHT", "MOTOR_STOP"])
 
-#	WHEEL_POSITION_REACHED = 200
+EventState = Enum(["SENSOR_TOUCH_DOWN", "SENSOR_TOUCH_UP", "SENSOR_ULTRASOUND_DELTA"])
 
-# All values above 1000 are reserved for states
-#def EventStates():
-#	SENSOR_TOUCH_DOWN = 1000
-#	SENSOR_TOUCH_UP = 1001
-
-EventTypes = Enum(["SENSOR_TOUCH", "SENSOR_ULTRASOUND", "SENSOR_LIGHT"])
-
-EventStates = Enum(["SENSOR_TOUCH_DOWN", "SENSOR_TOUCH_UP"])
