@@ -28,3 +28,8 @@ class WallFollow:
 		self.motorBias = deltaFunction(params['distance'] - self.followDistance)
 		robot.drive(self.speedCoeff * (1 + self.motorBias)/2, self.speedCoeff * (1 - self.motorBias)/2)
 
+if __name__ == '__main__':
+	robot = Robot()
+	WallFollow(robot, robot.event)
+	robot.mainLoop()
+
