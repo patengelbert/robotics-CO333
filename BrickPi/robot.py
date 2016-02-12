@@ -19,20 +19,20 @@ class Events:
 	function will be called with `event(params)`. `params` is typically
 	a dictionary with named values, such as 'position', 'state' etc.
 	"""
-	def add(name, event):
-		if data.get(name) is None:
-			data[name] = [event]
+	def add(self, name, event):
+		if self.data.get(name) is None:
+			self.data[name] = [event]
 		else:
-			data[name].add(event)
+			self.data[name].add(event)
 
 	"""
 	Raises the event identified by `name`
 	e.g. a sensor might call `invoke(SENSOR_TYPE_FOO, {'value':self.value})`
 	"""
-	def invoke(name, params):
-		if data.get(name) is None:
+	def invoke(self, name, params):
+		if self.data.get(name) is None:
 			return
-		for handler in data.get(name):
+		for handler in self.data.get(name):
 			handler(params)
 
 """
@@ -101,7 +101,7 @@ class Robot:
 		self.initConfig()
 		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
-		Bumper(events)
+		Bumper(self.events)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
 		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
@@ -220,7 +220,9 @@ class Robot:
 			self.motorR.check()
 			time.sleep(self.deltaTime)
 
-	def sensorAction(self):
+	def sensorAction(self, params):
+		if(params['position'] != 'either' or not params['down']):
+			return
 		self.wait()
 		# function triggered by the event handler when the touchsensor values are changed.
 		if (self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN) \

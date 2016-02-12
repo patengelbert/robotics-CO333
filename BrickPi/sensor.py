@@ -69,4 +69,5 @@ class Bumper:
 
 	def __init__(self, events):
 		self.events = events
-		events.add(SENSOR_TOUCH, bumperEvent)		
+		events.add(EventType.SENSOR_TOUCH, self.bumperEvent)
+
