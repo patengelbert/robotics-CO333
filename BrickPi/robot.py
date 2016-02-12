@@ -23,7 +23,7 @@ class Events:
 		if self.data.get(name) is None:
 			self.data[name] = [event]
 		else:
-			self.data[name].add(event)
+			self.data[name].append(event)
 
 	"""
 	Raises the event identified by `name`
@@ -89,6 +89,7 @@ class Robot:
 		self.pidk_d = 20
 
 	def __init__(self):
+		self.logging = False
 		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
