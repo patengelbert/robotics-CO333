@@ -104,7 +104,7 @@ class Robot:
 		Bumper(events)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
 
-		self.events.add(EventType.SENSOR_TOUCH, lambda params: if params['position'] == 'either' and params['down'] == True: sensorAction())
+		self.events.add(EventType.SENSOR_TOUCH, sensorAction)
 	
 	###############
 	### Logging ###

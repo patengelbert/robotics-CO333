@@ -41,7 +41,7 @@ Single ultrasonic sensor
 """
 class UltraSonicSensor(Sensor):
 
-	def __init__(self, *args, **kwargs)
+	def __init__(self, *args, **kwargs):
 		self.eventType = EventType.SENSOR_TOUCH
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
 
@@ -59,13 +59,13 @@ class Bumper:
 		if(params['position'] == 'left'):
 			leftDown = params['down']
 		if(params['position'] == 'right'):
-			rightDown = parans['down']
+			rightDown = params['down']
 		isBoth = leftDown & rightDown
 		isEither = leftDown | rightDown
 		if(isBoth != wasBoth):
-			self.events.invoke(EventType.SENSOR_TOUCH, {'position':'both', 'down':isBoth)
-		if(isEither != wasEither)
-			self.events.invoke(EventType.SENSOR_TOUCH, {'position':'either', 'down':isEither)
+			self.events.invoke(EventType.SENSOR_TOUCH, {'position':'both', 'down':isBoth})
+		if(isEither != wasEither):
+			self.events.invoke(EventType.SENSOR_TOUCH, {'position':'either', 'down':isEither})
 
 	def __init__(self, events):
 		self.events = events
