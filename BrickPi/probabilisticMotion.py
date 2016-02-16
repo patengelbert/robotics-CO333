@@ -23,6 +23,9 @@ class ProbabilisticMotion:
 	def noise(self):
 		return random.random()*0.05
 
+	def printParticles(self):
+		print("drawParticles:" + [(p.x, p.y, p.a) for p in self.particles])
+
 	def updateParticles(self, d):
 		particles = [Particle(\
 			p.x + (d + self.noise())*cos(p.a), \
@@ -40,24 +43,23 @@ class ProbabilisticMotion:
 		for i in range(0, 4):
 			total = 0.0
 			while total < self.size:
-				robot.move(self.step)
-				robot.wait()
-				updateParticles(self.step)
-				print("drawParticles:" + str(self.particles))
-				newX += step*cos(angle)
-				newY += step*sin(angle)
+				self.robot.move(self.step)
+				self.robot.wait()
+				self.updateParticles(self.step)
+				self.printParticles()
+				newX = posX + step*cos(angle)
+				newY = posY + step*sin(angle)
 				print("drawLine:" + str(posX, posY, newX, newY))
 				posX = newX
 				posY = newY
-			robot.rotate(90)
-			robot.wait()
-			updateAngle(90)
-			print("drawParticles:" + str(self.particles))
+			self.robot.rotate(90)
+			self.robot.wait()
+			self.updateAngle(90)
+			self.printParticles()
 			angle += 90
 
 if __name__ == '__main__':
 	robot = Robot()
-	robot.setPID(150, 0, 0)
 	motion = ProbabilisticMotion(robot)
 	motion.run()
 
