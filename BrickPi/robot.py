@@ -1,55 +1,52 @@
+from __future__ import print_function
 import brickpi
 import math
 import time
-import ConfigParser
+from ConfigParser import RawConfigParser
+from eventTypes import EventType, EventState
+from motor import Motor
+from sensor import PushSensor, Bumper , UltraSonicSensor
 
-class Motor:
-
-	def __init__(self, interface, id):
-		self.interface = interface
-		self.id = id
-		self.motorParams = interface.MotorAngleControllerParameters()
-		self.threshold = 0.05
-		self.initConfig()
-		interface.motorEnable(id)
-
-	def initConfig(self):
-		config = ConfigParser.RawConfigParser()
-		config.optionxform = str
-		config.read('robot.cfg')
-		for (item, value) in config.items('Motor'):
-			setattr(self, item, float(value))
-		print "Motor " + str(self.id) + " Config loaded"
-
-	def setPID(self, p, i, d):
-		self.motorParams.pidParameters.k_p = p
-		self.motorParams.pidParameters.k_i = i
-		self.motorParams.pidParameters.k_d = d
-		self.update()
-		
-	def update(self):
-		self.interface.setMotorAngleControllerParameters(self.id, self.motorParams)
-
-	def rotate(self, angle):
-		self.nextMove = angle
-		#self.interface.increaseMotorAngleReference(self.id, angle)
-
-	def isRotating(self):
-		return math.fabs(self.interface.getMotorAngleReferences([self.id])[0] - self.interface.getMotorAngle(self.id)[0]) > self.threshold
-
-class Sensor:
+"""
+A much simplified event handler class. Just add events and raise them by name
+"""
+class Events:
+	data = {}
 	
-	def __init__(self, interface, id, port, sensor_type):
-		self.interface = interface
-		self.id = id
-		self.port = port
-		self.sensor_type = sensor_type
-		
-		interface.sensorEnable(port, sensor_type)
-	
-		
+	"""
+	Adds an event to the list identified by `name`.
+	When `invoke(name, params)` is called, every event added with this
+	function will be called with `event(params)`. `params` is typically
+	a dictionary with named values, such as 'position', 'state' etc.
+	"""
+	def add(self, name, event):
+		if self.data.get(name) is None:
+			self.data[name] = [event]
+		else:
+			self.data[name].append(event)
+
+	"""
+	Raises the event identified by `name`
+	e.g. a sensor might call `invoke(SENSOR_TYPE_FOO, {'value':self.value})`
+	"""
+	def invoke(self, name, params):
+		if self.data.get(name) is None:
+			return
+		for handler in self.data.get(name):
+			handler(params)
+
+"""
+Main robot class
+"""	
 class Robot:
-	
+
+	######################
+	### Initialisation ###
+	######################
+
+	"""
+	Sets up the standard motor parameters (excluding PID values)
+	"""
 	def initMotorParams(self, motorParams):
 		motorParams.maxRotationAcceleration = 10
 		motorParams.maxRotationSpeed = 20
@@ -58,88 +55,196 @@ class Robot:
 		motorParams.pidParameters.minOutput = -255
 		motorParams.pidParameters.maxOutput = 255
 	
+	"""
+	Reads robot configuration from the config file
+	"""
 	def initConfig(self):
-		config = ConfigParser.RawConfigParser()
+		config = RawConfigParser()
 		config.optionxform = str
 		config.read('robot.cfg')
 		for (item, value) in config.items('Robot'):
 			setattr(self, item, float(value))
-		print "Robot config loaded"
+		print("Robot config loaded")
 	
+	"""
+	Sets default configuration values - call this before `initConfig`
+	"""
 	def setDefaults(self):
-	
-		# Default config values
+		# The time between successive `check` calls
+		self.deltaTime = 0.1
+		# Overall power coefficient to the motors
 		self.powerL = 1
 		self.powerR = 1
+		# Overall coefficient for rotation
 		self.rotatePower = 0.95
 
+		# Number of radians to one metre of movement
 		self.movementCoeff = 36.363636
+		# The centre-to-wheel distance of the robot
 		self.botRadius = 0.08
 		
+		# Motor PID values
 		self.pidk_p = 600
-		self.pidk_i = 400
+		self.pidk_i = 100
 		self.pidk_d = 20
 
 	def __init__(self):
+		self.logging = False
 		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
-		self.motorL = Motor(self.interface, 0)
-		self.motorR = Motor(self.interface, 1)
+		self.events = Events()
+		self.motorL = Motor(self.interface, self.events, 0)
+		self.motorR = Motor(self.interface, self.events, 1)
 		self.initMotorParams(self.motorL.motorParams)
 		self.initMotorParams(self.motorR.motorParams)
 
 		self.initConfig()
-		self.touchSensor = Sensor(self.interface, 0, 1, brickpi.SensorType.SENSOR_TOUCH)
+		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
+		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
+		Bumper(self.events)
+		self.ultraSonic = UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASONIC)
 		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
+
+		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
 	
+	###############
+	### Logging ###
+	###############
+
+	"""
+	Set whether to enable logging
+	"""
 	def setLogging(self, log):
 		self.logging = log
 
-	def setLogName(self, optargs = None):
-		optargs = [optarg for optarg in optargs if optarg is not None]
-		optargs_str = '_'.join(str(optarg) for optarg in optargs)
-		self.logName = './logs/' + str(int(time.time())) +'_p' + str(self.pidk_p) + '_i' + str(self.pidk_i) + '_d' + str(self.pidk_d) + '_' + optargs_str + '.log'
+	"""
+	Starts logging on the current interface
+	`optargs` is a list of identifying values for the log file name
+	"""
+	def startLogging(self, optargs):
+		if self.logging:
+			optargs = [optarg for optarg in optargs if optarg is not None]
+			optargs_str = '_'.join(str(optarg) for optarg in optargs)
+			self.logName = './logs/' + \
+				str(int(time.time())) +'_p' + \
+				str(self.pidk_p) + '_i' + \
+				str(self.pidk_i) + '_d' + \
+				str(self.pidk_d) + '_' + optargs_str + '.log'
+			self.interface.startLogging(self.logName)
+
+	"""
+	Stops all logging
+	"""
+	def stopLogging(self):
+		self.interface.stopLogging()
+
+	########################
+	### 'with' statement ###
+	########################
 
 	def __enter__(self):
 		return self
 
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.interface.terminate()
+
+	#####################
+	### Motor control ###
+	#####################
 	
+	"""
+	Sets PID values for all motors
+	"""
 	def setPID(self, p, i, d):
 		self.motorL.setPID(p, i, d)
 		self.motorR.setPID(p, i, d)
 	
+	"""
+	Whether any of the motors are rotating
+	"""
 	def isMoving(self):
 		return self.motorL.isRotating() or self.motorR.isRotating()
-	
+
+	"""
+	Moves the given distance forwards or backwards
+	"""
 	def move(self, distance):
-		wheel = distance * self.movementCoeff;
+		# distance specified in metres
+		wheel = distance * self.movementCoeff
+		self.startLogging(['move', distance])
 		self.motorL.rotate(self.powerL * wheel)
 		self.motorR.rotate(self.powerR * wheel)
-		if self.logging:
-			self.setLogName(['move', distance])
-			self.interface.startLogging(self.logName)			
-		self.startAction()
-		if self.logging:
-			pass
-			self.interface.stopLogging()
+		self.stopLogging()
 	
+	"""
+	Rotates the whole robot by the given angle clockwise
+	"""
 	def rotate(self, angle):
-		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff;
+		# angle specified in degrees
+		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff
+		self.startLogging(['turn', angle])
 		self.motorL.rotate( self.powerL * wheel)
 		self.motorR.rotate(-self.powerR * wheel)
-		if self.logging:
-			self.setLogName(['turn', angle])
-			self.interface.startLogging(self.logName)			
-		self.startAction()
-		if self.logging:
-			self.interface.stopLogging()
+		self.stopLogging()
 
-	def startAction(self):
-		self.interface.increaseMotorAngleReferences([self.motorL.id, self.motorR.id], [self.motorL.nextMove, self.motorR.nextMove])
+	def drive(self, speedL, speedR):
+		self.motorL.setSpeed(speedL)
+		self.motorR.setSpeed(speedR)
+
+	def arcPath(self, theta):
+		# theta = 0 returns to straight path
+		# Positive theta => too far to the right => turn left
+		if theta <= 0 :
+			self.powerL = 1 
+			self.powerR = 1 + theta
+		else: 		
+			self.powerL = 1 - theta
+			self.powerR = 1 
 	
+	"""
+	Blocks the program until the robot stops moving
+	"""
 	def wait(self):
 		while self.isMoving():
-			time.sleep(0.1)
+			time.sleep(self.deltaTime)
+
+	######################
+	### Sensor control ###
+	######################
+
+	"""
+	Starts the main loop, checking sensors and responding to events until
+	`running` is false
+	"""
+	def mainLoop(self):
+		self.running = True
+		while self.running:
+			self.touchSensorL.check()
+			self.touchSensorR.check()
+			self.ultraSonic.check()
+			self.motorL.check()
+			self.motorR.check()
+			time.sleep(self.deltaTime)
+
+	def sensorAction(self, params):
+		if(params['position'] != 'either' or not params['down']):
+			return
+		self.wait()
+		# function triggered by the event handler when the touchsensor values are changed.
+		if (self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN) \
+			and (self.touchSensorR.getState() == EventState.SENSOR_TOUCH_DOWN):
+			self.move(-20)
+			self.wait()
+			self.rotate(self, 90)
+		elif self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, 45)
+		elif self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN:
+			self.move(-10)
+			self.wait()
+			self.rotate(self, -45)
+		
+
+			
