@@ -182,14 +182,14 @@ class Robot:
 		self.stopLogging()
 	
 	"""
-	Rotates the whole robot by the given angle clockwise
+	Rotates the whole robot by the given angle anticlockwise
 	"""
 	def rotate(self, angle):
 		# angle specified in degrees
 		wheel = self.rotatePower * angle * (math.pi/180) * self.botRadius * self.movementCoeff
 		self.startLogging(['turn', angle])
-		self.motorL.rotate( self.powerL * wheel)
-		self.motorR.rotate(-self.powerR * wheel)
+		self.motorL.rotate(-self.powerL * wheel)
+		self.motorR.rotate( self.powerR * wheel)
 		self.stopLogging()
 
 	def drive(self, speedL, speedR):

@@ -1,38 +1,44 @@
 from robot import Robot
-from math import tan, sqrt, degrees
+from math import atan2, sqrt, degrees, fabs
 
 class Navigate:
+
 	def __init__(self, robot):
 		self.robot = robot
 		self.x = 0
 		self.y = 0
 		self.theta = 0
+
 	def waypoint(self, point):
+		if point == (self.x, self.y):
+			return
 		(targetx, targety) = point
-		angle = degrees(tan(targety/targetx))
-		rotation = self.theta - angle
-		if rotation > 180:
-			robot.rotate(360 - rotation)
-		elif rotation < -180:
-			robot.rotate(360 + rotation)
-		else:
-			robot.rotate(rotation)
-		print rotation
-		robot.wait()
-		self.theta = angle
 		distx = targetx - self.x
 		disty = targety - self.y
+		angle = degrees(atan2(disty, distx))
+		rotation = angle - self.theta
+		if fabs(rotation) > 180:
+			rotation = rotation - 360
+		print 'Rotating: ' + str(rotation) +\
+			 ' to heading ' + str(angle)
+		robot.rotate(rotation)
+		robot.wait()
 		distance = sqrt((distx ** 2) + (disty ** 2))
-		print distance
+		print 'Travelling: ' + str(distance) +\
+			 'm to location ' + str(point)
 		robot.move(distance)
 		robot.wait()
+	
+		# Update the current position
+		self.theta = angle
 		self.x = targetx
 		self.y = targety
 
 if __name__ == '__main__':
 	robot = Robot()
 	navigate = Navigate(robot)
-	navigate.waypoint((0.1,0))
 	navigate.waypoint((0.1,0.1))
-			
-		
+	navigate.waypoint((0, 0))
+	navigate.waypoint((-0.1, 0.0))
+	navigate.waypoint((0.1, 0.1))
+
