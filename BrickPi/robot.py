@@ -90,6 +90,7 @@ class Robot:
 
 	def __init__(self):
 		self.logging = False
+		self.isLogging = False
 		self.setDefaults()
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
@@ -124,6 +125,7 @@ class Robot:
 	"""
 	def startLogging(self, optargs):
 		if self.logging:
+			self.isLogging = True
 			optargs = [optarg for optarg in optargs if optarg is not None]
 			optargs_str = '_'.join(str(optarg) for optarg in optargs)
 			self.logName = './logs/' + \
@@ -137,7 +139,9 @@ class Robot:
 	Stops all logging
 	"""
 	def stopLogging(self):
-		self.interface.stopLogging()
+		if self.isLogging:
+			self.isLogging = False
+			self.interface.stopLogging()
 
 	########################
 	### 'with' statement ###

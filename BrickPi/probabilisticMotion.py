@@ -24,7 +24,7 @@ class ProbabilisticMotion:
 		self.particles = [Particle(0, 0, 0)]*self.numParticles
 
 	def noise(self):
-		return random.random()*0.01
+		return random.gauss(0.0, 0.5)*0.01
 
 	def printParticles(self):
 		scale = self.scale
