@@ -11,10 +11,19 @@ class Sensor(object):
 		self.port = port
 		self.events = events
 		self.sensorType = sensorType
+		self.initConfig()
 		interface.sensorEnable(port, self.sensorType)
 
 	def check(self):
 		raise NotImplementedError()
+
+	def initconfig(self):
+		config = rawConfigParser()
+		config.optionxform = str
+		config.read('robot.cfg')
+		for (item, value) in config.items('Sensor'):
+			setattr(self, item, flaot(value)
+		print("Sensor" + str(self.sensorType) + " Config loaded")
 
 """
 A single touch sensor
@@ -40,6 +49,8 @@ Single ultrasonic sensor
 """
 class UltraSonicSensor(Sensor):
 	def __init__(self, *args, **kwargs):
+		self.ultrasonicOffset = 7
+		self.ultrasonicInfValue = 255
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
 		self.value = 0
 
@@ -48,8 +59,8 @@ class UltraSonicSensor(Sensor):
 		if(self.value != ivalue):
 			self.value = ivalue
 			cvalue = float('inf')
-			if(ivalue < 255):
-				cvalue = (ivalue - 7)/100.0
+			if(ivalue < ultrasonicInfValue):
+				cvalue = (ivalue - ultrasonicOffset)/100.0
 			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
 
 """
