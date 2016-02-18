@@ -1,5 +1,6 @@
 import brickpi
 from eventTypes import EventType, EventState
+from ConfigParser import RawConfigParser
 
 """
 Base class for sensors, enabling it on the given port
@@ -17,13 +18,13 @@ class Sensor(object):
 	def check(self):
 		raise NotImplementedError()
 
-	def initconfig(self):
-		config = rawConfigParser()
+	def initConfig(self):
+		config = RawConfigParser()
 		config.optionxform = str
 		config.read('robot.cfg')
 		for (item, value) in config.items('Sensor'):
-			setattr(self, item, flaot(value)
-		print("Sensor" + str(self.sensorType) + " Config loaded")
+			setattr(self, item, float(value))
+		print "Sensor" + str(self.sensorType) + " Config loaded"
 
 """
 A single touch sensor
