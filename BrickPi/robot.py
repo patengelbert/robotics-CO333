@@ -232,23 +232,6 @@ class Robot:
 			time.sleep(self.deltaTime)
 
 	def sensorAction(self, params):
-		if(params['position'] != 'either' or not params['down']):
-			return
-		self.wait()
-		# function triggered by the event handler when the touchsensor values are changed.
-		if (self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN) \
-			and (self.touchSensorR.getState() == EventState.SENSOR_TOUCH_DOWN):
-			self.move(-20)
-			self.wait()
-			self.rotate(self, 90)
-		elif self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN:
-			self.move(-10)
-			self.wait()
-			self.rotate(self, 45)
-		elif self.touchSensorL.getState() == EventState.SENSOR_TOUCH_DOWN:
-			self.move(-10)
-			self.wait()
-			self.rotate(self, -45)
-		
+		if(params['position'] in ('either', 'both')):
+			print(params)
 
-			

@@ -55,7 +55,10 @@ class Motor:
 	Whether the motor is currently rotating; i.e. has not reached its reference
 	"""
 	def isRotating(self):
-		return math.fabs(self.interface.getMotorAngleReferences([self.id])[0] \
+		angleRef = self.interface.getMotorAngleReferences([self.id])
+		if(angleRef == []):
+			return False
+		return math.fabs(angleRef[0] \
 		- self.interface.getMotorAngle(self.id)[0]) > self.threshold
 
 	"""
