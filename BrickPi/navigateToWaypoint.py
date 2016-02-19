@@ -32,7 +32,10 @@ class Navigate:
 if __name__ == '__main__':
 	robot = Robot()
 	navigate = Navigate(robot)
-	navigate.waypoint((0.1,0))
-	navigate.waypoint((0.1,0.1))
+	while true:
+		print('Enter waypoint coordinate')
+		pointX = input('x:')
+		pointY = input('y:')
+		navigate.waypoint((pointX, pointY))
 			
 		
