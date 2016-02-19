@@ -17,8 +17,11 @@ class Navigate:
 		disty = targety - self.y
 		angle = degrees(atan2(disty, distx))
 		rotation = angle - self.theta
-		if fabs(rotation) > 180:
-			rotation = rotation - 360
+		while rotation > 180:
+			rotation -= 360
+		while rotation < -180:
+			rotation += 360
+
 		print 'Rotating: ' + str(rotation) +\
 			 ' to heading ' + str(angle)
 		self.robot.rotate(rotation)
@@ -37,7 +40,7 @@ class Navigate:
 if __name__ == '__main__':
 	robot = Robot()
 	navigate = Navigate(robot)
-	while true:
+	while True:
 		print('Enter waypoint coordinate')
 		pointX = input('x:')
 		pointY = input('y:')
