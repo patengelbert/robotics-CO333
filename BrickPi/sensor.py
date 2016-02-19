@@ -56,12 +56,16 @@ class UltraSonicSensor(Sensor):
 		self.value = 0
 
 	def check(self):
-		ivalue = self.interface.getSensorValue(self.port)[0]
+		ivalue = self.interface.getSensorValue(self.port)
+		if ivalue == () or ivalue == None:
+			ivalue = self.ultrasonicInfValue
+		else:
+			ivalue = ivalue[0]
 		if(self.value != ivalue):
 			self.value = ivalue
 			cvalue = float('inf')
-			if(ivalue < ultrasonicInfValue):
-				cvalue = (ivalue - ultrasonicOffset)/100.0
+			if(ivalue < self.ultrasonicInfValue):
+				cvalue = (ivalue - self.ultrasonicOffset)/100.0
 			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
 
 """
@@ -72,15 +76,15 @@ class Bumper:
 	leftDown = False
 	rightDown = False
 
-	def bumperEvent(params):
-		wasBoth = leftDown & rightDown
-		wasEither = leftDown | rightDown
+	def bumperEvent(self, params):
+		wasBoth = self.leftDown & self.rightDown
+		wasEither = self.leftDown | self.rightDown
 		if(params['position'] == 'left'):
-			leftDown = params['down']
+			self.leftDown = params['down']
 		if(params['position'] == 'right'):
-			rightDown = params['down']
-		isBoth = leftDown & rightDown
-		isEither = leftDown | rightDown
+			self.rightDown = params['down']
+		isBoth = self.leftDown & self.rightDown
+		isEither = self.leftDown | self.rightDown
 		if(isBoth != wasBoth):
 			self.events.invoke(EventType.SENSOR_TOUCH, {'position':'both', 'down':isBoth})
 		if(isEither != wasEither):
