@@ -1,0 +1,11 @@
+1.	Max-Dist = 2.54m
+	Min-Dist = 0.05m
+
+2.	Max-Angle = 45 degrees
+
+3. 	Systematic Error = +0.01m
+
+4	Deviation at 0.4m = 0.02m
+	Deviation at 1.0m = 0.0m
+
+5 	Further Comments - Relaibility decreases linearly between 2.0m and 2.54m				Rapid changes at high distances are likely to cause error readings of 255
