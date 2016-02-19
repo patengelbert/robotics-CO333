@@ -21,13 +21,13 @@ class Navigate:
 			rotation = rotation - 360
 		print 'Rotating: ' + str(rotation) +\
 			 ' to heading ' + str(angle)
-		robot.rotate(rotation)
-		robot.wait()
+		self.robot.rotate(rotation)
+		self.robot.wait()
 		distance = sqrt((distx ** 2) + (disty ** 2))
 		print 'Travelling: ' + str(distance) +\
 			 'm to location ' + str(point)
-		robot.move(distance)
-		robot.wait()
+		self.robot.move(distance)
+		self.robot.wait()
 	
 		# Update the current position
 		self.theta = angle

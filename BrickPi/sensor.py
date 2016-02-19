@@ -56,7 +56,11 @@ class UltraSonicSensor(Sensor):
 		self.value = 0
 
 	def check(self):
-		ivalue = self.interface.getSensorValue(self.port)[0]
+		ivalue = self.interface.getSensorValue(self.port)
+		if ivalue == () or ivalue == None:
+			ivalue = self.ultrasonicInfValue
+		else:
+			ivalue = ivalue[0]
 		if(self.value != ivalue):
 			self.value = ivalue
 			cvalue = float('inf')
