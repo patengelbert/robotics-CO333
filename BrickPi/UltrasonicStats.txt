@@ -8,4 +8,5 @@
 4	Deviation at 0.4m = 0.02m
 	Deviation at 1.0m = 0.0m
 
-5 	Further Comments - Relaibility decreases linearly between 2.0m and 2.54m				Rapid changes at high distances are likely to cause error readings of 255
+5 	Further Comments - Relaibility decreases linearly between 2.0m and 2.54m				
+Rapid changes at high distances are likely to cause error readings of 255

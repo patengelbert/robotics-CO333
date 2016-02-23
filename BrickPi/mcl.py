@@ -1,9 +1,14 @@
 from robot import Robot
+from navigateToWaypoint import Navigate
 
 class MonteCarloLocation:
 
-	def __init__(self, robot):
+	def __init__(self, robot, navigation):
 		self.robot = robot
+		
+		#init for navigation
+		self.step = 20
+		self.navigation = navigation
 	
 	def run(self):
 		pass
@@ -11,10 +16,10 @@ class MonteCarloLocation:
 	def updatePoints(self):
 		pass # Update MCL points based on movement
 		
-	def weightPoints(self):
+	def weightPoint(self):
 		pass # Weight points based on measured depth vs. mapped depth
 		
-	def cullPoints(self):
+	def resample(self):
 		pass # Split high weighted points, drop low weighted ones
 		
 	def defineMap(self):

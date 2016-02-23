@@ -9,7 +9,7 @@ class Navigate:
 		self.y = 0
 		self.theta = 0
 
-	def waypoint(self, point):
+	def waypoint(self, point, step=0):
 		if point == (self.x, self.y):
 			return
 		(targetx, targety) = point
@@ -27,15 +27,26 @@ class Navigate:
 		self.robot.rotate(rotation)
 		self.robot.wait()
 		distance = sqrt((distx ** 2) + (disty ** 2))
+		
+		#Either move directly to the way point or in steps
+		if step == 0 || distance <= step:
+			self.robot.move(distance)
+		else 
+			distance = step
+			self.robot.move(distance)
+		
 		print 'Travelling: ' + str(distance) +\
-			 'm to location ' + str(point)
-		self.robot.move(distance)
+				 'm to location ' + str(point)
 		self.robot.wait()
+		
+		#TODO correct position to work with mcl
+		updatePosition(angle, targetx, targety)
 	
+	def updatePosition(self, angle, x, y):
 		# Update the current position
 		self.theta = angle
-		self.x = targetx
-		self.y = targety
+		self.x = x
+		self.y = y
 
 if __name__ == '__main__':
 	robot = Robot()
