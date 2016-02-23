@@ -1,5 +1,7 @@
 from robot import Robot
 from navigateToWaypoint import Navigate
+from math import exp, fabs, isinf
+from eventTypes import EventType
 
 class MonteCarloWaypoint(Navigate):
 	
@@ -54,8 +56,14 @@ class MonteCarloWaypoint(Navigate):
 			p.p / tWeight) \
 			for p in particles]
 		
-	def weightPoint(self, point):
-		pass # Weight points based on measured depth vs. mapped depth
+	def calculate_likelihood(self, x, y, theta, z):
+		estimateDepth = getMappedDepth()
+		measuredDepth = z
+		if not isinf(measuredDepth):
+			exponent = fabs(estimatedDepth - measuredDepth)
+			return exp(-1 * exponent)
+		else:
+			return 1
 		
 	def resample(self):
 		pass # Split high weighted points, drop low weighted ones
@@ -65,10 +73,14 @@ class MonteCarloWaypoint(Navigate):
 		
 	def getMappedDepth(self):
 		pass # Get mapped depth at given position
+	
+	def onUltrasound(params):
+		self.depth = params['distance']
 
 	def noise(self):
 		return random.gauss(0.0, 0.5)*0.01
 
 if __name__ == '__main__':
 	robot = Robot()
+	robot.events.add(EventType.SENSOR_ULTRASOUND, onUltrasound)
 	# TODO see if we ca change robot to use a behaviour rather than a behaviour use a robot
