@@ -3,10 +3,11 @@ from math import cos, sin, pi
 import random
 
 class Particle:
-    def __init__(self, x, y, a):
+    def __init__(self, x, y, a, p=1):
         self.x = x
         self.y = y
         self.a = a
+	self.probabilty = p;
 
 class ProbabilisticMotion:
 
