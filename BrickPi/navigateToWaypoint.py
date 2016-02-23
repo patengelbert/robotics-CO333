@@ -41,7 +41,7 @@ class Navigate:
 		
 		#TODO correct position to work with mcl
 		updatePosition(angle, targetx, targety)
-	
+		
 	def updatePosition(self, angle, x, y):
 		# Update the current position
 		self.theta = angle

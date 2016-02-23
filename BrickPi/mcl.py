@@ -11,7 +11,16 @@ class MonteCarloWaypoint(Navigate):
 		self.particles = [Particle(0, 0, 0)]*self.numParticles
 	
 	def run(self):
-		pass
+		running = true
+		while running:
+			print('Enter waypoint coordinate')
+			pointX = input('x:')
+			pointY = input('y:')
+			
+			while self.x != pointX and self.y != pointY
+				self.waypoint((pointX, pointY), self.step)
+				updatePoints()
+			
 
 	def updatePoints(self):
 		#self.particles = [Particle{\
@@ -19,7 +28,7 @@ class MonteCarloWaypoint(Navigate):
 		#	p.y + (d + 
 		pass
 		
-	def weighPoints(self, point):
+	def weightPoint(self, point):
 		pass # Weight points based on measured depth vs. mapped depth
 		
 	def resample(self):
