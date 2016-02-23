@@ -1,5 +1,6 @@
 from robot import Robot
 from navigateToWaypoint import Navigate
+import random
 
 class MonteCarloWaypoint(Navigate):
 
@@ -32,7 +33,16 @@ class MonteCarloWaypoint(Navigate):
 		pass # Weight points based on measured depth vs. mapped depth
 		
 	def resample(self):
-		pass # Split high weighted points, drop low weighted ones
+		newParticles = [Particle(0, 0, 0)]*self.numParticles
+		
+		#generate cumulative weight array
+		cumulativeWeight = [0]*self.numParticles
+		for i, tempParticle in self.particles
+			sum = 0
+			for j in range(0,i)
+				sum += self.particle[j].p
+			cumulativeWeight[i] = sum
+		#TODO finish random particle selectio
 		
 	def defineMap(self):
 		pass # Define a map based on lines
