@@ -21,7 +21,7 @@ class MonteCarloWaypoint(Navigate):
 			pointX = input('x:')
 			pointY = input('y:')
 			
-			while self.x != pointX and self.y != pointY
+			while self.x != pointX and self.y != pointY:
 				self.waypoint((pointX, pointY), self.step)
 				updatePoints()
 			
@@ -38,7 +38,9 @@ class MonteCarloWaypoint(Navigate):
 		self.particles = resample(self.particles)
 		# Normalise Weightings
 		self.particles = normalise(self.particles)
-		tX = 0, tY = 0, tA = 0
+		tX = 0
+		tY = 0
+		tA = 0
 		for p in self.particles:
 			tX += p.x
 			tY += p.y
@@ -51,7 +53,8 @@ class MonteCarloWaypoint(Navigate):
 
 	def normalise(self, particles):
 		tWeight = 0
-		(tWeight += p.p) for p in particles
+		for p in particles:
+			tWeight += p.p
 		return [Particle(\
 			p.x, p.y, p.a,\
 			p.p / tWeight) \
