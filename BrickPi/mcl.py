@@ -12,7 +12,7 @@ class MonteCarloWaypoint(Navigate):
 		
 		#init for navigation
 		self.step = 20
-		self.particles = [Particle(0, 0, 0, 1/sel.numParticles)]*self.numParticles
+		self.particles = [Particle(0, 0, 0, 1/self.numParticles)]*self.numParticles
 	
 	def run(self):
 		running = true
@@ -26,11 +26,11 @@ class MonteCarloWaypoint(Navigate):
 				updatePoints()
 			
 
-	def updatePoints(self, d, a):
+	def updatePosition(self, d, a):
 		# Redo weightings
 		self.particles = [Particle(\
-			p.x + (d + self.noise())*cos(p, a), \
-			p.y + (d + self.noise())*sin(p, a), \
+			p.x + (d + self.noise())*cos(p.a), \
+			p.y + (d + self.noise())*sin(p.a), \
 			p.a + self.noise() + a, \
 			p.p * calculate_likelihood(p.x, p.y, p.a, self.depth))\
 			for p in self.particles] 
@@ -43,9 +43,10 @@ class MonteCarloWaypoint(Navigate):
 			tX += p.x
 			tY += p.y
 			tA += p.a
-		self.updatePosition(tA/self.numParticles, \
-			tX/self.numParticles, \
-			tY/self.numParticles)
+		#Update the current position
+		self.theta = tA/self.numParticles
+		self.x = tX/self.numParticles
+		self.y = tY/self.numParticles
 
 
 	def normalise(self, particles):
