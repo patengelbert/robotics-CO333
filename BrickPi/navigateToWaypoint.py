@@ -40,13 +40,13 @@ class Navigate:
 		self.robot.wait()
 		
 		#TODO correct position to work with mcl
-		updatePosition(angle, targetx, targety)
+		updatePosition(distance, rotation)
 		
-	def updatePosition(self, angle, x, y):
+	def updatePosition(self, d, a):
 		# Update the current position
-		self.theta = angle
-		self.x = x
-		self.y = y
+		self.theta += a
+		self.x = d*cos(p.a)
+		self.y = d*sin(p.a)
 
 if __name__ == '__main__':
 	robot = Robot()

@@ -7,7 +7,7 @@ class Particle:
         self.x = x
         self.y = y
         self.a = a
-	self.probabilty = p;
+	self.p = p;
 
 class ProbabilisticMotion:
 
