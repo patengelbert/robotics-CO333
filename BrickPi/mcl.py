@@ -15,6 +15,18 @@ class MonteCarloWaypoint(Navigate):
 		#init for navigation
 		self.step = 20
 		self.particles = [Particle(0, 0, 0, 1/self.numParticles)]*self.numParticles
+
+		# Define map
+		self.lines = [\
+			(Point(0.00, 0.00), Point(0.00, 1.68)), \
+			(Point(0.00, 1.68), Point(0.84, 1.68)), \
+			(Point(0.84, 1.26), Point(0.84, 2.10)), \
+			(Point(0.84, 2.10), Point(1.68, 2.10)), \
+			(Point(1.68, 2.10), Point(1.68, 0.84)), \
+			(Point(1.68, 0.84), Point(2.10, 0.84)), \
+			(Point(2.10, 0.84), Point(2.10, 0.00)), \
+			(Point(2.10, 0.00), Point(0.00, 0.00))  \
+		]
 	
 	def run(self):
 		running = true
@@ -83,11 +95,21 @@ class MonteCarloWaypoint(Navigate):
 			cumulativeWeight[i] = sum
 		#TODO finish random particle selectio
 		
-	def defineMap(self):
-		pass # Define a map based on lines
+	def intersectLineRay(self, s, e, p, t):
+		det = (cos(t)*(s.x - e.x) - sin(t)*(s.y - e.y))
+		a = (sin(t)*(p.y - s.y) - cos(t)*(p.x - s.x)) / det
+		d = ((s.y - e.y)*(p.x - s.x) + (e.x - s.x)*(p.y - s.y)) / det
+		if(a < 0.0 or a > 1.0 or d < 0.0):
+			return None
+		return d
 		
-	def getMappedDepth(self):
-		pass # Get mapped depth at given position
+	def getMappedDepth(self, position, angle):
+		depth = float('inf')
+		for line in self.lines:
+			newDepth = self.lineRayIntersect(line[0], line[1], position, angle)
+			if(newDepth != None and newDepth < depth):
+				depth = newDepth
+		return depth
 	
 	def onUltrasound(params):
 		self.depth = params['distance']
