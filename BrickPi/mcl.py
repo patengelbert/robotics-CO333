@@ -72,16 +72,24 @@ class MonteCarloWaypoint(Navigate):
 			return 1
 		
 	def resample(self):
+		# Normalise particle weightings
+		self.particles = normalise(self.particles)
+		# New particle set
 		newParticles = [Particle(0, 0, 0)]*self.numParticles
 		
-		#generate cumulative weight array
+		# Generate cumulative weight array
 		cumulativeWeight = [0]*self.numParticles
-		for i, tempParticle in self.particles
-			sum = 0
-			for j in range(0,i)
-				sum += self.particle[j].p
-			cumulativeWeight[i] = sum
-		#TODO finish random particle selectio
+		cumulativeWeight[0] = self.particles[0].p
+		for i, tempParticle in list(enumerate(self.particles))[1:]:
+			cumulativeWeight[i] = cumulativeWeight[i-1] + tempParticle.p
+		
+		# Pick new particles for the set
+		for i in range(0,self.numParticles):
+			rndNum = random.random()
+			for j,weight in enumerate(cumulativeWeight):
+				if rndNum <= weight:
+					newParticles[i] = self.particles[j]
+					break
 		
 	def defineMap(self):
 		pass # Define a map based on lines
