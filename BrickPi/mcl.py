@@ -30,8 +30,8 @@ class MonteCarloWaypoint(Navigate):
 		]
 		
 		# Print map and particles on web
-		scale = 400
-		offset = 100
+		self.scale = 400
+		self.offset = 100
 		
 		for (a, b) in self.lines:
 			print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
