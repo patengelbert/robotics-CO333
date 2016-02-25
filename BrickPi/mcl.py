@@ -143,7 +143,7 @@ class MonteCarloWaypoint(Navigate):
 
 if __name__ == '__main__':
 	robot = Robot()
-	navigate = MonteCarloNavigate(robot)
+	navigate = MonteCarloWaypoint(robot)
 	robot.events.add(EventType.SENSOR_ULTRASOUND, navigate.onUltrasound)
 	navigae.run()
 	# TODO see if we can change robot to use a behaviour rather than a behaviour use a robot

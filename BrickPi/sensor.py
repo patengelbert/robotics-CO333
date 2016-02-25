@@ -56,17 +56,22 @@ class UltraSonicSensor(Sensor):
 		self.value = 0
 
 	def check(self):
+		ivalue = self.getValue()
+		
+		if(self.value != ivalue):
+			self.value = ivalue
+			cvalue = float('inf')
+			if(ivalue != self.ultrasonicInfValue):
+				cvalue = ivalue
+			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
+	
+	def getvalue(self):
 		ivalue = self.interface.getSensorValue(self.port)
 		if ivalue == () or ivalue == None:
 			ivalue = self.ultrasonicInfValue
 		else:
-			ivalue = ivalue[0]
-		if(self.value != ivalue):
-			self.value = ivalue
-			cvalue = float('inf')
-			if(ivalue < self.ultrasonicInfValue):
-				cvalue = (ivalue - self.ultrasonicOffset)/100.0
-			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
+			ivalue = (ivalue - self.ultrasonicOffset)/100.0)
+		return ivalue
 
 """
 Implements the 'either' and 'both' positions for two touch sensors
