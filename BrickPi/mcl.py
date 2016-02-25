@@ -1,12 +1,13 @@
 from robot import Robot
 from navigateToWaypoint import Navigate
+from probabilisticMotion import Particle
 import random
 from math import exp, fabs, isinf
 from eventTypes import EventType
 
 
 class MonteCarloWaypoint(Navigate):
-	
+
 	numParticles = 100
 
 	def __init__(self, robot):
@@ -37,7 +38,6 @@ class MonteCarloWaypoint(Navigate):
 			
 			while self.x != pointX and self.y != pointY:
 				self.waypoint((pointX, pointY), self.step)
-				updatePoints()
 			
 
 	def updatePosition(self, d, a):
@@ -52,23 +52,21 @@ class MonteCarloWaypoint(Navigate):
 		self.particles = resample(self.particles)
 		# Normalise Weightings
 		self.particles = normalise(self.particles)
+		# Get mean of particles
 		tX = 0
 		tY = 0
 		tA = 0
 		for p in self.particles:
-			tX += p.x
-			tY += p.y
-			tA += p.a
+			tX += p.x*p.p
+			tY += p.y*p.p
+			tA += p.a*p.p
 		#Update the current position
-		self.theta = tA/self.numParticles
-		self.x = tX/self.numParticles
-		self.y = tY/self.numParticles
-
+		self.theta = tA
+		self.x = tX
+		self.y = tY
 
 	def normalise(self, particles):
-		tWeight = 0
-		for p in particles:
-			tWeight += p.p
+		tWeight = sum([p.p for p in particles])
 		return [Particle(\
 			p.x, p.y, p.a,\
 			p.p / tWeight) \
@@ -83,7 +81,7 @@ class MonteCarloWaypoint(Navigate):
 			exponent = fabs(estimatedDepth - measuredDepth)
 			return exp((-1*exponent**2)/(2*variance)) + K
 		else:
-			return 1
+			return 1.0
 		
 	def resample(self):
 		# Normalise particle weightings
@@ -104,6 +102,8 @@ class MonteCarloWaypoint(Navigate):
 				if rndNum <= weight:
 					newParticles[i] = self.particles[j]
 					break
+		self.particles = newParticles
+		self.normalise(self.particles)
 		
 	def intersectLineRay(self, s, e, p, t):
 		det = (cos(t)*(s.x - e.x) - sin(t)*(s.y - e.y))
@@ -130,4 +130,4 @@ class MonteCarloWaypoint(Navigate):
 if __name__ == '__main__':
 	robot = Robot()
 	robot.events.add(EventType.SENSOR_ULTRASOUND, onUltrasound)
-	# TODO see if we ca change robot to use a behaviour rather than a behaviour use a robot
+	# TODO see if we can change robot to use a behaviour rather than a behaviour use a robot
