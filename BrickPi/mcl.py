@@ -49,9 +49,7 @@ class MonteCarloWaypoint(Navigate):
 			p.p * calculate_likelihood(p.x, p.y, p.a, self.depth))\
 			for p in self.particles] 
 		# Resample high values and cull low values
-		self.particles = resample(self.particles)
-		# Normalise Weightings
-		self.particles = normalise(self.particles)
+		resample()
 		# Get mean of particles
 		tX = 0
 		tY = 0
@@ -80,8 +78,7 @@ class MonteCarloWaypoint(Navigate):
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
 			return exp((-1*exponent**2)/(2*variance)) + K
-		else:
-			return 1.0
+		return 1.0
 		
 	def resample(self):
 		# Normalise particle weightings
