@@ -28,6 +28,15 @@ class MonteCarloWaypoint(Navigate):
 			(Point(2.10, 0.84), Point(2.10, 0.00)), \
 			(Point(2.10, 0.00), Point(0.00, 0.00))  \
 		]
+		
+		# Print map and particles on web
+		scale = 400
+		offset = 100
+		
+		for (a, b) in self.lines:
+			print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
+		
+		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 	
 	def run(self):
 		running = true
@@ -62,6 +71,9 @@ class MonteCarloWaypoint(Navigate):
 		self.theta = tA
 		self.x = tX
 		self.y = tY
+		
+		# Print particles on web
+		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 
 	def normalise(self, particles):
 		tWeight = sum([p.p for p in particles])
