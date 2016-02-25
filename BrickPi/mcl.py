@@ -62,12 +62,18 @@ class MonteCarloWaypoint(Navigate):
 		tX = 0
 		tY = 0
 		tA = 0
+		tempX = 0
+		tempY = 0
 		for p in self.particles:
 			tX += p.x*p.p
 			tY += p.y*p.p
-			tA += p.a*p.p
+			#tA += p.a*p.p
+			tempX += math.cos(p.a)*p.p
+			tempY += math.sin(p.a)*p.p
 		#Update the current position
-		self.theta = tA
+		new_A = math.atan2(tempY,tempX)
+		#self.theta = tA
+		self.theta = new_A
 		self.x = tX
 		self.y = tY
 		
