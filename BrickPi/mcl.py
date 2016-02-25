@@ -36,7 +36,6 @@ class MonteCarloWaypoint(Navigate):
 		for (a, b) in self.lines:
 			print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
 		
-		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 	
 	def run(self):
 		running = true
