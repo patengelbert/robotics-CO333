@@ -85,7 +85,7 @@ class MonteCarloWaypoint(Navigate):
 	def calculate_likelihood(self, x, y, theta, z):
 		estimateDepth = getMappedDepth()
 		measuredDepth = z
-		variance = 4	# Error in sonar reading
+		variance = 0.04	# Error in sonar reading
 		K = 0.02	# Adds robustness, constant  probability for garbage reading
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
@@ -139,4 +139,6 @@ class MonteCarloWaypoint(Navigate):
 if __name__ == '__main__':
 	robot = Robot()
 	robot.events.add(EventType.SENSOR_ULTRASOUND, onUltrasound)
+	navigate = MonteCarloNavigate(robot)
+	navigae.run()
 	# TODO see if we can change robot to use a behaviour rather than a behaviour use a robot
