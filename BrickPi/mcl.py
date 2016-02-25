@@ -57,13 +57,13 @@ class MonteCarloWaypoint(Navigate):
 		tY = 0
 		tA = 0
 		for p in self.particles:
-			tX += p.x
-			tY += p.y
-			tA += p.a
+			tX += p.x*p.p
+			tY += p.y*p.p
+			tA += p.a*p.p
 		#Update the current position
-		self.theta = tA/self.numParticles
-		self.x = tX/self.numParticles
-		self.y = tY/self.numParticles
+		self.theta = tA
+		self.x = tX
+		self.y = tY
 
 	def normalise(self, particles):
 		tWeight = sum([p.p for p in particles])
@@ -99,6 +99,8 @@ class MonteCarloWaypoint(Navigate):
 				if rndNum <= weight:
 					newParticles[i] = self.particles[j]
 					break
+		self.particles = newParticles
+		self.normalise(self.particles)
 		
 	def intersectLineRay(self, s, e, p, t):
 		det = (cos(t)*(s.x - e.x) - sin(t)*(s.y - e.y))
