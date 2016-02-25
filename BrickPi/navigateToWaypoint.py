@@ -8,8 +8,12 @@ class Navigate(object):
 		self.x = 0
 		self.y = 0
 		self.theta = 0
+		self.error = False
 
 	def waypoint(self, point, step=0):
+		if self.error:
+			self.error = not self.updatePosition(0, 0)
+			return;
 		if point == (self.x, self.y):
 			return
 		(targetx, targety) = point
@@ -40,13 +44,14 @@ class Navigate(object):
 		self.robot.wait()
 		
 		#TODO correct position to work with mcl
-		self.updatePosition(distance, rotation)
+		self.error = not self.updatePosition(distance, rotation)
 		
 	def updatePosition(self, d, a):
 		# Update the current position
 		self.theta += a
 		self.x = d*cos(p.a)
 		self.y = d*sin(p.a)
+		return True
 
 if __name__ == '__main__':
 	robot = Robot()

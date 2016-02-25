@@ -59,16 +59,14 @@ class UltraSonicSensor(Sensor):
 		ivalue = self.getValue()
 		
 		if(self.value != ivalue):
-			self.value = ivalue
-			cvalue = float('inf')
-			if(ivalue != self.ultrasonicInfValue):
-				cvalue = ivalue
-			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
+			if ivalue is not self.ultrasonicInfValue:
+				self.value = ivalue
+				self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':ivalue})
 	
 	def getValue(self):
 		ivalue = self.interface.getSensorValue(self.port)[0]
-		if ivalue == () or ivalue == None:
-			ivalue = self.ultrasonicInfValue
+		if ivalue == () or ivalue == None or ivalue == self.ultrasonicInfValue:
+			ivalue = float('inf')
 		else:
 			ivalue = (ivalue - self.ultrasonicOffset)/100.0
 		return ivalue

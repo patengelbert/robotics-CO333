@@ -19,9 +19,13 @@ class MonteCarloWaypoint(Navigate):
 		super(self.__class__, self).__init__(robot)
 		
 		#init for navigation
-		self.step = 20
-		self.particles = [Particle(0, 0, 0, float(1.0/self.numParticles))]*self.numParticles
+		self.step = 0.2
+		self.particles = [Particle(0.84, 0.30, 0.0, float(1.0/self.numParticles))]*self.numParticles
 		self.depth = float('inf')
+
+		self.x = 0.84
+		self.y = 0.30
+		self.threshold = 0.01
 
 		#  Define map
 		self.lines = [\
@@ -34,6 +38,11 @@ class MonteCarloWaypoint(Navigate):
 			(Point(2.10, 0.84), Point(2.10, 0.00)), \
 			(Point(2.10, 0.00), Point(0.00, 0.00))  \
 		]
+
+		self.waypoints = [\
+			Point(1.8,0.3), \
+			Point(1.8,0.54), \
+			Point(1.38, 0.54)]
 		
 		# Print map and particles on web
 		self.scale = 400
@@ -46,12 +55,16 @@ class MonteCarloWaypoint(Navigate):
 	def run(self):
 		running = True
 		while running:
-			print('Enter waypoint coordinate')
-			pointX = input('x:')
-			pointY = input('y:')
-			
-			while self.x != pointX and self.y != pointY:
-				self.waypoint((pointX, pointY), self.step)
+			#print('Enter waypoint coordinate')
+			#pointX = input('x:')
+			#pointY = input('y:')
+			for w in self.waypoints:
+				pointX = w.x
+				pointY = w.y
+				print('Old Position: '+ str(self.x) + ' ' +  str(self.y))
+				while((fabs(self.x - pointX) > self.threshold) or (fabs(self.y - pointY) > self.threshold)):
+					print('New Position: '+ str(self.x) + ' ' +  str(self.y))
+					self.waypoint((pointX, pointY), self.step)
 			
 	def updateAngle(self, a):
 		newParticles = []
@@ -69,6 +82,8 @@ class MonteCarloWaypoint(Navigate):
 		self.updateAngle(a)
 		# Redo weightings
 		self.depth = self.robot.ultraSonic.getValue()
+		if isinf(self.depth):
+			return False
 		self.particles = [Particle(\
 			p.x + (d + self.noise())*cos(p.a), \
 			p.y + (d + self.noise())*sin(p.a), \
@@ -86,21 +101,18 @@ class MonteCarloWaypoint(Navigate):
 		for p in self.particles:
 			tX += p.x*p.p
 			tY += p.y*p.p
-			#tA += p.a*p.p
-			tempX += cos(p.a)*p.p
-			tempY += sin(p.a)*p.p
+			tA += p.a*p.p
 		#Update the current position
-		new_A = atan2(tempY,tempX)
-		#self.theta = tA
-		self.theta = new_A
+		#new_A = atan2(tempY,tempX)
+		self.theta = tA
 		self.x = tX
 		self.y = tY
 		
 		# Print particles on web
 		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
+		return True		
 
 	def normalise(self, particles):
-		print [p.p for p in particles]
 		tWeight = sum([p.p for p in particles])
 		return [Particle(\
 			p.x, p.y, p.a,\
@@ -111,15 +123,14 @@ class MonteCarloWaypoint(Navigate):
 		estimatedDepth = self.getMappedDepth(Point(x, y), theta)
 		measuredDepth = z
 		variance = 0.04	# Error in sonar reading
-		K = 0.02	# Adds robustness, constant  probability for garbage reading
+		K = 0	# Adds robustness, constant  probability for garbage reading
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
 			return exp((-1*exponent**2)/(2*variance)) + K
 		return 1.0
 		
 	def resample(self):
-		print [p.p for p in self.particles]
-		# Normalise particle weightings
+		#  Normalise particle weightings
 		self.particles = self.normalise(self.particles)
 		# New particle set
 		newParticles = [Particle(0, 0, 0)]*self.numParticles
