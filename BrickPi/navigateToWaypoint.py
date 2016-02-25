@@ -15,16 +15,16 @@ class Navigate(object):
 		(targetx, targety) = point
 		distx = targetx - self.x
 		disty = targety - self.y
-		angle = degrees(atan2(disty, distx))
+		angle = atan2(disty, distx)
 		rotation = angle - self.theta
-		while rotation > 180:
-			rotation -= 360
-		while rotation < -180:
-			rotation += 360
+		while rotation > math.pi:
+			rotation -= 2*math.pi
+		while rotation < -math.pi:
+			rotation += 2*math.pi
 
-		print 'Rotating: ' + str(rotation) +\
-			 ' to heading ' + str(angle)
-		self.robot.rotate(rotation)
+		print 'Rotating: ' + str(degrees(rotation)) +\
+			 ' to heading ' + str(degrees(angle))
+		self.robot.rotate(degrees(rotation))
 		self.robot.wait()
 		distance = sqrt((distx ** 2) + (disty ** 2))
 		

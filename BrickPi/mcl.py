@@ -54,15 +54,24 @@ class MonteCarloWaypoint(Navigate):
 				self.waypoint((pointX, pointY), self.step)
 			
 	def updateAngle(self, a):
-		self.particles = [Particle(p.x, p.y, p.a+a+self.noise()*180, p.p) for p in self.particles]
+		newParticles = []
+		for p in self.particles:
+			newA = p.a + a + self.noise()
+			while newA > math.pi:
+				newA -= 2*math.pi
+			while newA <= -math.pi:
+				newA += 2*math.pi
+			newP = Particle(p.x, p.y, newA, p.p)
+			newParticles.append(newP)
+		self.particles = newParticles
 
 	def updatePosition(self, d, a):
 		self.updateAngle(a)
 		# Redo weightings
 		self.depth = self.robot.ultraSonic.getValue()
 		self.particles = [Particle(\
-			p.x + (d + self.noise())*cos(radians(p.a)), \
-			p.y + (d + self.noise())*sin(radians(p.a)), \
+			p.x + (d + self.noise())*cos(p.a), \
+			p.y + (d + self.noise())*sin(p.a), \
 			p.a, \
 			p.p * self.calculate_likelihood(p.x, p.y, p.a, self.depth))\
 			for p in self.particles] 
@@ -132,8 +141,7 @@ class MonteCarloWaypoint(Navigate):
 		self.normalise(self.particles)
 		
 	def intersectLineRay(self, s, e, p, t):
-		angle = radians(t)
-		det = (cos(angle)*(e.y - s.y) - sin(angle)*(e.x - s.x))
+		det = (cos(t)*(e.y - s.y) - sin(t)*(e.x - s.x))
 		d = (((e.y - s.y)*(s.x - p.y)) - ((e.x - s.x)*(s.y - p.y)))/det
 		if(d < 0.0):
 			return None
