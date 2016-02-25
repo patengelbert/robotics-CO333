@@ -77,9 +77,11 @@ class MonteCarloWaypoint(Navigate):
 	def calculate_likelihood(self, x, y, theta, z):
 		estimateDepth = getMappedDepth()
 		measuredDepth = z
+		variance = 4	# Error in sonar reading
+		K = 0.02	# Adds robustness, constant  probability for garbage reading
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
-			return exp(-1 * exponent)
+			return exp((-1*exponent**2)/(2*variance)) + K
 		else:
 			return 1
 		
