@@ -152,19 +152,43 @@ class MonteCarloWaypoint(Navigate):
 		self.normalise(self.particles)
 		
 	def intersectLineRay(self, s, e, p, t):
-		det = (cos(t)*(e.y - s.y) - sin(t)*(e.x - s.x))
-		d = (((e.y - s.y)*(s.x - p.y)) - ((e.x - s.x)*(s.y - p.y)))/det
-		if(d < 0.0):
-			return None
-		return d
-		
+        	a = e.y - s.y
+        	b = e.x - s.x
+        	c = s.x - p.x
+        	d = s.y - p.y
+        	det = (cos(t)*(e.y - s.y) - sin(t)*(e.x - s.x))
+        	if det == 0.0:
+                	return None
+        	m = ((a*c) - (b*d)) /det
+        	if(m <= 0.0):
+                	return None
+        	intx = cos(t)*m + p.x
+        	inty = sin(t)*m + p.y
+        	if not self.isBetween(s, e, Point(intx, inty)):
+                	return None
+        	return m
+
+
 	def getMappedDepth(self, position, angle):
-		depth = float('inf')
-		for line in self.lines:
-			newDepth = self.intersectLineRay(line[0], line[1], position, angle)
-			if(newDepth != None and newDepth < depth):
-				depth = newDepth
-		return depth
+        	depth = float('inf')
+        	for line in self.lines:
+                	newDepth = intersectLineRay(line[0], line[1], position, angle)
+                	if(newDepth != None and newDepth < depth):
+                        	depth = newDepth
+        	return depth
+
+	def isBetween(self, a, b, c):
+    		crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y)
+    		if abs(crossproduct) > 0.1 : return False   # (or != 0 if using integers)
+
+    		dotproduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y)*(b.y - a.y)
+    		if dotproduct < 0 : return False
+
+    		squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
+    		if dotproduct > squaredlengthba: return False
+
+    		return True
+
 	
 	def onUltrasound(params):
 		self.depth = params['distance']
