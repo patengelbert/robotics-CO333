@@ -29,9 +29,9 @@ class Navigate:
 		distance = sqrt((distx ** 2) + (disty ** 2))
 		
 		#Either move directly to the way point or in steps
-		if step == 0 || distance <= step:
+		if step == 0 or distance <= step:
 			self.robot.move(distance)
-		else 
+		else: 
 			distance = step
 			self.robot.move(distance)
 		
