@@ -1,5 +1,5 @@
 from robot import Robot
-from math import atan2, sqrt, degrees, fabs
+from math import atan2, sqrt, degrees, fabs, pi
 
 class Navigate(object):
 
@@ -21,13 +21,13 @@ class Navigate(object):
 		disty = targety - self.y
 		angle = atan2(disty, distx)
 		rotation = angle - self.theta
-		while rotation > math.pi:
-			rotation -= 2*math.pi
-		while rotation < -math.pi:
-			rotation += 2*math.pi
+		while rotation > pi:
+			rotation -= 2*pi
+		while rotation <= -pi:
+			rotation += 2*pi
 
 		print 'Rotating: ' + str(degrees(rotation)) +\
-			 ' to heading ' + str(degrees(angle))
+			 ' from '+ str(self.theta) + ' to heading ' + str(degrees(angle))
 		self.robot.rotate(degrees(rotation))
 		self.robot.wait()
 		distance = sqrt((distx ** 2) + (disty ** 2))

@@ -2,7 +2,7 @@ from robot import Robot
 from navigateToWaypoint import Navigate
 from probabilisticMotion import Particle
 import random
-from math import exp, fabs, isinf, cos, sin, radians, atan2
+from math import exp, fabs, isinf, cos, sin, radians, atan2, pi
 from eventTypes import EventType
 
 class Point:
@@ -25,7 +25,7 @@ class MonteCarloWaypoint(Navigate):
 
 		self.x = 0.84
 		self.y = 0.30
-		self.threshold = 0.01
+		self.threshold = 0.03
 
 		#  Define map
 		self.lines = [\
@@ -42,7 +42,8 @@ class MonteCarloWaypoint(Navigate):
 		self.waypoints = [\
 			Point(1.8,0.3), \
 			Point(1.8,0.54), \
-			Point(1.38, 0.54)]
+			Point(1.38,0.54), \
+			Point(1.38,1.68)]
 		
 		# Print map and particles on web
 		self.scale = 400
@@ -70,10 +71,10 @@ class MonteCarloWaypoint(Navigate):
 		newParticles = []
 		for p in self.particles:
 			newA = p.a + a + self.noise()
-			while newA > math.pi:
-				newA -= 2*math.pi
-			while newA <= -math.pi:
-				newA += 2*math.pi
+			while newA > pi:
+				newA -= 2*pi
+			while newA <= -pi:
+				newA += 2*pi
 			newP = Particle(p.x, p.y, newA, p.p)
 			newParticles.append(newP)
 		self.particles = newParticles
@@ -109,7 +110,7 @@ class MonteCarloWaypoint(Navigate):
 		self.y = tY
 		
 		# Print particles on web
-		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
+		#print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 		return True		
 
 	def normalise(self, particles):
@@ -123,7 +124,7 @@ class MonteCarloWaypoint(Navigate):
 		estimatedDepth = self.getMappedDepth(Point(x, y), theta)
 		measuredDepth = z
 		variance = 0.04	# Error in sonar reading
-		K = 0	# Adds robustness, constant  probability for garbage reading
+		K = 1	# Adds robustness, constant  probability for garbage reading
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
 			return exp((-1*exponent**2)/(2*variance)) + K
@@ -172,7 +173,7 @@ class MonteCarloWaypoint(Navigate):
 	def getMappedDepth(self, position, angle):
         	depth = float('inf')
         	for line in self.lines:
-                	newDepth = intersectLineRay(line[0], line[1], position, angle)
+                	newDepth = self.intersectLineRay(line[0], line[1], position, angle)
                 	if(newDepth != None and newDepth < depth):
                         	depth = newDepth
         	return depth
