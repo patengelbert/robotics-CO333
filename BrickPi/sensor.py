@@ -65,12 +65,12 @@ class UltraSonicSensor(Sensor):
 				cvalue = ivalue
 			self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':cvalue})
 	
-	def getvalue(self):
-		ivalue = self.interface.getSensorValue(self.port)
+	def getValue(self):
+		ivalue = self.interface.getSensorValue(self.port)[0]
 		if ivalue == () or ivalue == None:
 			ivalue = self.ultrasonicInfValue
 		else:
-			ivalue = (ivalue - self.ultrasonicOffset)/100.0)
+			ivalue = (ivalue - self.ultrasonicOffset)/100.0
 		return ivalue
 
 """

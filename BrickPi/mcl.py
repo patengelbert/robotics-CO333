@@ -2,8 +2,13 @@ from robot import Robot
 from navigateToWaypoint import Navigate
 from probabilisticMotion import Particle
 import random
-from math import exp, fabs, isinf
+from math import exp, fabs, isinf, cos, sin, radians, atan2
 from eventTypes import EventType
+
+class Point:
+	def __init__(self, x, y):
+		self.x = x
+		self.y = y
 
 
 class MonteCarloWaypoint(Navigate):
@@ -11,13 +16,14 @@ class MonteCarloWaypoint(Navigate):
 	numParticles = 100
 
 	def __init__(self, robot):
-		super(Navigate).__init__(self, robot)
+		super(self.__class__, self).__init__(robot)
 		
 		#init for navigation
 		self.step = 20
-		self.particles = [Particle(0, 0, 0, 1/self.numParticles)]*self.numParticles
+		self.particles = [Particle(0, 0, 0, float(1.0/self.numParticles))]*self.numParticles
+		self.depth = float('inf')
 
-		# Define map
+		#  Define map
 		self.lines = [\
 			(Point(0.00, 0.00), Point(0.00, 1.68)), \
 			(Point(0.00, 1.68), Point(0.84, 1.68)), \
@@ -38,7 +44,7 @@ class MonteCarloWaypoint(Navigate):
 		
 	
 	def run(self):
-		running = true
+		running = True
 		while running:
 			print('Enter waypoint coordinate')
 			pointX = input('x:')
@@ -47,17 +53,21 @@ class MonteCarloWaypoint(Navigate):
 			while self.x != pointX and self.y != pointY:
 				self.waypoint((pointX, pointY), self.step)
 			
+	def updateAngle(self, a):
+		self.particles = [Particle(p.x, p.y, p.a+a+self.noise()*180, p.p) for p in self.particles]
 
 	def updatePosition(self, d, a):
+		self.updateAngle(a)
 		# Redo weightings
+		self.depth = self.robot.ultraSonic.getValue()
 		self.particles = [Particle(\
-			p.x + (d + self.noise())*cos(p.a), \
-			p.y + (d + self.noise())*sin(p.a), \
-			p.a + self.noise() + a, \
-			p.p * calculate_likelihood(p.x, p.y, p.a, self.depth))\
+			p.x + (d + self.noise())*cos(radians(p.a)), \
+			p.y + (d + self.noise())*sin(radians(p.a)), \
+			p.a, \
+			p.p * self.calculate_likelihood(p.x, p.y, p.a, self.depth))\
 			for p in self.particles] 
 		# Resample high values and cull low values
-		resample()
+		self.resample()
 		# Get mean of particles
 		tX = 0
 		tY = 0
@@ -68,10 +78,10 @@ class MonteCarloWaypoint(Navigate):
 			tX += p.x*p.p
 			tY += p.y*p.p
 			#tA += p.a*p.p
-			tempX += math.cos(p.a)*p.p
-			tempY += math.sin(p.a)*p.p
+			tempX += cos(p.a)*p.p
+			tempY += sin(p.a)*p.p
 		#Update the current position
-		new_A = math.atan2(tempY,tempX)
+		new_A = atan2(tempY,tempX)
 		#self.theta = tA
 		self.theta = new_A
 		self.x = tX
@@ -81,6 +91,7 @@ class MonteCarloWaypoint(Navigate):
 		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 
 	def normalise(self, particles):
+		print [p.p for p in particles]
 		tWeight = sum([p.p for p in particles])
 		return [Particle(\
 			p.x, p.y, p.a,\
@@ -88,7 +99,7 @@ class MonteCarloWaypoint(Navigate):
 			for p in particles]
 		
 	def calculate_likelihood(self, x, y, theta, z):
-		estimateDepth = getMappedDepth()
+		estimatedDepth = self.getMappedDepth(Point(x, y), theta)
 		measuredDepth = z
 		variance = 0.04	# Error in sonar reading
 		K = 0.02	# Adds robustness, constant  probability for garbage reading
@@ -98,8 +109,9 @@ class MonteCarloWaypoint(Navigate):
 		return 1.0
 		
 	def resample(self):
+		print [p.p for p in self.particles]
 		# Normalise particle weightings
-		self.particles = normalise(self.particles)
+		self.particles = self.normalise(self.particles)
 		# New particle set
 		newParticles = [Particle(0, 0, 0)]*self.numParticles
 		
@@ -120,23 +132,24 @@ class MonteCarloWaypoint(Navigate):
 		self.normalise(self.particles)
 		
 	def intersectLineRay(self, s, e, p, t):
-		det = (cos(t)*(s.x - e.x) - sin(t)*(s.y - e.y))
-		a = (sin(t)*(p.y - s.y) - cos(t)*(p.x - s.x)) / det
-		d = ((s.y - e.y)*(p.x - s.x) + (e.x - s.x)*(p.y - s.y)) / det
-		if(a < 0.0 or a > 1.0 or d < 0.0):
+		angle = radians(t)
+		det = (cos(angle)*(e.y - s.y) - sin(angle)*(e.x - s.x))
+		d = (((e.y - s.y)*(s.x - p.y)) - ((e.x - s.x)*(s.y - p.y)))/det
+		if(d < 0.0):
 			return None
 		return d
 		
 	def getMappedDepth(self, position, angle):
 		depth = float('inf')
 		for line in self.lines:
-			newDepth = self.lineRayIntersect(line[0], line[1], position, angle)
+			newDepth = self.intersectLineRay(line[0], line[1], position, angle)
 			if(newDepth != None and newDepth < depth):
 				depth = newDepth
 		return depth
 	
 	def onUltrasound(params):
 		self.depth = params['distance']
+		print self.depth
 
 	def noise(self):
 		return random.gauss(0.0, 0.5)*0.01
@@ -145,5 +158,5 @@ if __name__ == '__main__':
 	robot = Robot()
 	navigate = MonteCarloWaypoint(robot)
 	robot.events.add(EventType.SENSOR_ULTRASOUND, navigate.onUltrasound)
-	navigae.run()
+	navigate.run()
 	# TODO see if we can change robot to use a behaviour rather than a behaviour use a robot

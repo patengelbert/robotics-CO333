@@ -1,7 +1,7 @@
 from robot import Robot
 from math import atan2, sqrt, degrees, fabs
 
-class Navigate:
+class Navigate(object):
 
 	def __init__(self, robot):
 		self.robot = robot
@@ -40,7 +40,7 @@ class Navigate:
 		self.robot.wait()
 		
 		#TODO correct position to work with mcl
-		updatePosition(distance, rotation)
+		self.updatePosition(distance, rotation)
 		
 	def updatePosition(self, d, a):
 		# Update the current position
