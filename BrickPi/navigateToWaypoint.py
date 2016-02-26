@@ -1,5 +1,5 @@
 from robot import Robot
-from math import atan2, sqrt, degrees, fabs, pi
+from math import atan2, sqrt, degrees, fabs, pi, sin, cos, radians
 
 class Navigate(object):
 
@@ -11,40 +11,52 @@ class Navigate(object):
 		self.error = False
 
 	def waypoint(self, point, step=0):
-		if self.error:
-			self.error = not self.updatePosition(0, 0)
-			return;
+		#if self.error:
+			#self.error = not self.updatePosition(0, 0)
+			#targetx = self.x + (10*cos(self.theta))
+			#targety = self.y + (10*sin(self.theta))
+			#return
 		if point == (self.x, self.y):
 			return
+		
 		(targetx, targety) = point
 		distx = targetx - self.x
 		disty = targety - self.y
 		angle = atan2(disty, distx)
+		while angle > pi:
+			angle -= 2*pi
+		while angle <= -pi:
+			angle += 2*pi
 		rotation = angle - self.theta
+		print ('targetx: ' + str(targetx) + ', targety: ' + str(targety) + ', distx = ' + str(distx) + ', disty: ' + str(disty) + ', x: ' + str(self.x) + ', y: ' + str(self.y))
+		print ('angle: ' + str(angle) + ', theta: ' + str(self.theta) + ', rotation: ' + str(rotation))
 		while rotation > pi:
+			print 'angle overflow'
 			rotation -= 2*pi
 		while rotation <= -pi:
 			rotation += 2*pi
-
+			print 'angle overflow2'
 		print 'Rotating: ' + str(degrees(rotation)) +\
 			 ' from '+ str(self.theta) + ' to heading ' + str(degrees(angle))
 		self.robot.rotate(degrees(rotation))
 		self.robot.wait()
+		
 		distance = sqrt((distx ** 2) + (disty ** 2))
 		
 		#Either move directly to the way point or in steps
 		if step == 0 or distance <= step:
-			self.robot.move(distance)
+			pass
 		else: 
 			distance = step
-			self.robot.move(distance)
+		self.robot.move(distance)
 		
 		print 'Travelling: ' + str(distance) +\
 				 'm to location ' + str(point)
+		
 		self.robot.wait()
 		
 		#TODO correct position to work with mcl
-		self.error = not self.updatePosition(distance, rotation)
+		self.error = not self.updatePosition(distance, angle)
 		
 	def updatePosition(self, d, a):
 		# Update the current position

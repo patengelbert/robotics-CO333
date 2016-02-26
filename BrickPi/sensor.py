@@ -1,4 +1,4 @@
-import brickpi
+#import brickpi
 from eventTypes import EventType, EventState
 from ConfigParser import RawConfigParser
 
@@ -50,7 +50,7 @@ Single ultrasonic sensor
 """
 class UltraSonicSensor(Sensor):
 	def __init__(self, *args, **kwargs):
-		self.ultrasonicOffset = 7
+		self.ultrasonicOffset = -4
 		self.ultrasonicInfValue = 255
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
 		self.value = 0
