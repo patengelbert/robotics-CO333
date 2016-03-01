@@ -95,13 +95,15 @@ class MonteCarloWaypoint(Navigate):
 		# Get mean of particles
 		tX = 0
 		tY = 0
-		tA = 0
+		tsinA = 0
+		tcosA = 0
 		for p in self.particles:
 			tX += p.x*p.p
 			tY += p.y*p.p
-			tA += clampAnglePositive(p.a)*p.p
+			tsinA += sin(p.a)*p.p
+			tcosA += cos(p.a)*p.p
 		#Update the current position
-		self.theta = clampAngle(tA)
+		self.theta = clampAngle(atan2(tsinA, tcosA))
 		#self.theta = a
 		self.x = tX
 		self.y = tY
