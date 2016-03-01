@@ -99,7 +99,7 @@ class MonteCarloWaypoint(Navigate):
 		for p in self.particles:
 			tX += p.x*p.p
 			tY += p.y*p.p
-			tA += p.a*p.p
+			tA += clampAnglePositive(p.a)*p.p
 		#Update the current position
 		self.theta = clampAngle(tA)
 		#self.theta = a
