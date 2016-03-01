@@ -24,7 +24,7 @@ class Sensor(object):
 		config.read('robot.cfg')
 		for (item, value) in config.items('Sensor'):
 			setattr(self, item, float(value))
-		for (item, value) for config.items('Debug'):
+		for (item, value) in config.items('Debug'):
 			setattr(self, item, bool(value))
 		if self.debug:
 			print "Sensor" + str(self.sensorType) + " Config loaded"

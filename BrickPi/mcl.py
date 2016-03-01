@@ -48,8 +48,8 @@ class MonteCarloWaypoint(Navigate):
 			self.scale = 400
 			self.offset = 50
 		
-			for (a, b) in self.lines:
-				print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
+			#for (a, b) in self.lines:
+				#print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
 		
 	
 	def run(self):
@@ -78,7 +78,7 @@ class MonteCarloWaypoint(Navigate):
 		# Redo weightings
 		self.depth = self.robot.ultraSonic.getValue()
 		if isinf(self.depth):
-			self.theta = a
+			self.theta = clampAngle(self.theta+a)
 			self.x += d*cos(a)
 			self.y += d*sin(a)
 			return
@@ -101,14 +101,15 @@ class MonteCarloWaypoint(Navigate):
 			tsinA += sin(p.a)*p.p
 			tcosA += cos(p.a)*p.p
 		#Update the current position
-		self.theta = clampAngle(atan2(tsinA, tcosA))
-		#self.theta = a
+		#self.theta = clampAngle(atan2(tsinA, tcosA))
+		self.theta = clampAngle(self.theta + a)
 		self.x = tX
 		self.y = tY
 		
 		if self.robot.usingWeb:
 			# Print particles on web
-			print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
+			#print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
+			pass
 
 	def normalise(self, particles):
 		tWeight = sum([p.p for p in particles])
@@ -122,6 +123,8 @@ class MonteCarloWaypoint(Navigate):
 		measuredDepth = z
 		variance = 0.02**2	# Error in sonar reading
 		K = 1	# Adds robustness, constant  probability for garbage reading
+		if self.robot.debug:
+			print('estimatedDepth: ' + str(estimatedDepth) + ', measureDepth: ' + str(measuredDepth))
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
 			return exp((-1*exponent**2)/(2*variance)) + K
@@ -149,7 +152,7 @@ class MonteCarloWaypoint(Navigate):
 		self.particles = newParticles
 		self.normalise(self.particles)
 		
-	def intersectLineRay(s, e, p, t):
+	def intersectLineRay(self, s, e, p, t):
 		det = (sin(t)*(s.x - e.x) - cos(t)*(s.y - e.y))
 		if(det == 0):
 			return None
@@ -159,12 +162,14 @@ class MonteCarloWaypoint(Navigate):
 			return None
 		return d
 	
-	def getMappedDepth(position, angle):
+	def getMappedDepth(self, position, angle):
 		depth = float('inf')
-		for line in lines:
-			newDepth = intersectLineRay(line[0], line[1], position, angle)
+
+		for line in self.lines:
+			newDepth = self.intersectLineRay(line[0], line[1], position, angle)
 			if self.robot.debug:
-				print str(line[0]) + ', ' + str(line[1]) + ' = ' + str(newDepth)
+				pass
+				#print str(line[0]) + ', ' + str(line[1]) + ' = ' + str(newDepth)
 			if(newDepth != None and newDepth < depth):
 				depth = newDepth
 		return depth

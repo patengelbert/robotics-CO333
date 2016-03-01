@@ -64,8 +64,8 @@ class Robot:
 		config.read('robot.cfg')
 		for (item, value) in config.items('Robot'):
 			setattr(self, item, float(value))
-		for (item, value) in config.item('Debug'):
-			setattr(self, item, bool(value)
+		for (item, value) in config.items('Debug'):
+			setattr(self, item, bool(value))
 		if self.debug:
 			print("Robot config loaded")
 	
