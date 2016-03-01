@@ -64,7 +64,10 @@ class Robot:
 		config.read('robot.cfg')
 		for (item, value) in config.items('Robot'):
 			setattr(self, item, float(value))
-		print("Robot config loaded")
+		for (item, value) in config.item('Debug'):
+			setattr(self, item, bool(value)
+		if self.debug:
+			print("Robot config loaded")
 	
 	"""
 	Sets default configuration values - call this before `initConfig`
@@ -89,6 +92,8 @@ class Robot:
 		self.pidk_d = 20
 
 	def __init__(self):
+		self.debug = False
+		self.usingWeb = False
 		self.logging = False
 		self.isLogging = False
 		self.setDefaults()

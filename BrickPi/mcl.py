@@ -43,26 +43,24 @@ class MonteCarloWaypoint(Navigate):
 			Point(0.84, 0.84), \
 			Point(0.84, 0.3)]
 		
-		# Print map and particles on web
-		self.scale = 400
-		self.offset = 50
+		if self.robot.usingWeb:
+			# Print map and particles on web
+			self.scale = 400
+			self.offset = 50
 		
-		for (a, b) in self.lines:
-			print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
+			for (a, b) in self.lines:
+				print("drawLine:" + str((int(a.x*self.scale) + self.offset, int(a.y*self.scale) + self.offset, int(b.x*self.scale) + self.offset, int(b.y*self.scale) + self.offset)))
 		
 	
 	def run(self):
-		running = True
-		#while running:
-			#print('Enter waypoint coordinate')
-			#pointX = input('x:')
-			#pointY = input('y:')
 		for w in self.waypoints:
 			pointX = w.x
 			pointY = w.y
-			print('Old Position: '+ str(self.x) + ' ' +  str(self.y))
+			if self.robot.debug:
+				print('Old Position: '+ str(self.x) + ' ' +  str(self.y))
 			while((fabs(self.x - pointX) > self.threshold) or (fabs(self.y - pointY) > self.threshold)):
-				print('New Position: '+ str(self.x) + ' ' +  str(self.y))
+				if self.robot.debug:
+					print('New Position: '+ str(self.x) + ' ' +  str(self.y))
 				self.waypoint((pointX, pointY), self.step)
 			
 			
@@ -83,7 +81,7 @@ class MonteCarloWaypoint(Navigate):
 			self.theta = a
 			self.x += d*cos(a)
 			self.y += d*sin(a)
-			return False
+			return
 		self.particles = [Particle(\
 			p.x + (d + self.noise())*cos(p.a), \
 			p.y + (d + self.noise())*sin(p.a), \
@@ -108,9 +106,9 @@ class MonteCarloWaypoint(Navigate):
 		self.x = tX
 		self.y = tY
 		
-		# Print particles on web
-		print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
-		return True		
+		if self.robot.usingWeb:
+			# Print particles on web
+			print("drawParticles:" + str([(p.x*self.scale + self.offset, p.y*self.scale + self.offset, p.a) for p in self.particles]))
 
 	def normalise(self, particles):
 		tWeight = sum([p.p for p in particles])
@@ -165,14 +163,16 @@ class MonteCarloWaypoint(Navigate):
 		depth = float('inf')
 		for line in lines:
 			newDepth = intersectLineRay(line[0], line[1], position, angle)
-			print str(line[0]) + ', ' + str(line[1]) + ' = ' + str(newDepth)
+			if self.robot.debug:
+				print str(line[0]) + ', ' + str(line[1]) + ' = ' + str(newDepth)
 			if(newDepth != None and newDepth < depth):
 				depth = newDepth
 		return depth
 	
 	def onUltrasound(params):
 		self.depth = params['distance']
-		print self.depth
+		if self.robot.debug:
+			print self.depth
 
 	def noise(self):
 		return random.gauss(0.0, 0.5)*0.01

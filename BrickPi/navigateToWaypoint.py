@@ -9,14 +9,8 @@ class Navigate(object):
 		self.x = 0
 		self.y = 0
 		self.theta = 0
-		self.error = False
 
 	def waypoint(self, point, step=0):
-		#if self.error:
-			#self.error = not self.updatePosition(0, 0)
-			#targetx = self.x + (10*cos(self.theta))
-			#targety = self.y + (10*sin(self.theta))
-			#return
 		if point == (self.x, self.y):
 			return
 		
@@ -25,9 +19,8 @@ class Navigate(object):
 		disty = targety - self.y
 		angle = clampAngle(atan2(disty, distx))
 		rotation = clampAngle(angle - self.theta)
-		#print ('targetx: ' + str(targetx) + ', targety: ' + str(targety) + ', distx = ' + str(distx) + ', disty: ' + str(disty) + ', x: ' + str(self.x) + ', y: ' + str(self.y))
-		#print ('angle: ' + str(angle) + ', theta: ' + str(self.theta) + ', rotation: ' + str(rotation))
-		print 'Rotating ' + str(degrees(rotation)) +\
+		if self.robot.debug:
+			print 'Rotating ' + str(degrees(rotation)) +\
 			 ' from '+ str(degrees(self.theta)) + ' to heading ' + str(degrees(angle))
 		self.robot.rotate(degrees(rotation))
 		self.robot.wait()
@@ -35,16 +28,15 @@ class Navigate(object):
 		distance = sqrt((distx ** 2) + (disty ** 2))
 		
 		#Either move directly to the way point or in steps
-		if step == 0 or distance <= step:
-			pass
-		else: 
+		if step != 0 and distance > step:
 			distance = step
 		self.robot.move(distance)
 		
-		print 'Travelling ' + str(distance) +\
+		if self.robot.debug:
+			print 'Travelling ' + str(distance) +\
 				 'm to location ' + str(point)
 		self.robot.wait()
-		self.error = not self.updatePosition(distance, angle)
+		self.updatePosition(distance, rotation)
 		
 	def updatePosition(self, d, a):
 		self.theta += a
