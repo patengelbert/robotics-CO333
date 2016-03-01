@@ -95,18 +95,26 @@ class Robot:
 		self.interface = brickpi.Interface()
 		self.interface.initialize()
 		self.events = Events()
+		
+		# Init driving motors 
 		self.motorL = Motor(self.interface, self.events, 0)
 		self.motorR = Motor(self.interface, self.events, 1)
 		self.initMotorParams(self.motorL.motorParams)
 		self.initMotorParams(self.motorR.motorParams)
-
 		self.initConfig()
+		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
+		
+		# Init bumper
 		self.touchSensorL = PushSensor('left',  self.interface, 0, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		self.touchSensorR = PushSensor('right', self.interface, 1, self.events, brickpi.SensorType.SENSOR_TOUCH)
 		Bumper(self.events)
+		
+		# Init sonar 
 		self.ultraSonic = UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASONIC)
-		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
-
+		self.motorSonar = Motor(self.interface, self.events, 3)
+		self.initMotorParams(self.motorSonar.motorParams)
+		
+		# Events added
 		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
 	
 	###############
@@ -205,6 +213,9 @@ class Robot:
 		else: 		
 			self.powerL = 1 - theta
 			self.powerR = 1 
+			
+	def rotateSonar(self, angle):
+		self.motorSonar.rotate(angle);
 	
 	"""
 	Blocks the program until the robot stops moving
