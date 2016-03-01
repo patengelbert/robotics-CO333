@@ -24,7 +24,10 @@ class Sensor(object):
 		config.read('robot.cfg')
 		for (item, value) in config.items('Sensor'):
 			setattr(self, item, float(value))
-		print "Sensor" + str(self.sensorType) + " Config loaded"
+		for (item, value) for config.items('Debug'):
+			setattr(self, item, bool(value))
+		if self.debug:
+			print "Sensor" + str(self.sensorType) + " Config loaded"
 
 """
 A single touch sensor
