@@ -19,7 +19,7 @@ class SignatureContainer():
     def __init__(self, size = 5):
         self.size      = size; # max number of signatures that can be stored
         self.filenames = [];
-        
+		
         # Fills the filenames variable with names like loc_%%.dat 
         # where %% are 2 digits (00, 01, 02...) indicating the location number. 
         for i in range(self.size):
@@ -80,25 +80,31 @@ class SignatureContainer():
 class PlaceRecognition():    
 
 	def __init__(self, robot):
+		self.depth = 0;
 		self.robot = robot
+		
+		self.signatures = SignatureContainer(5);
+		
+		self.rotateStep = 2; # Degrees between each reading
 	
-	def run():
+	def run(self):
 		# Prior to starting learning the locations, it should delete files from previous
 		# learning either manually or by calling signatures.delete_loc_files(). 
 		# Then, either learn a location, until all the locations are learned, or try to
 		# recognize one of them, if locations have already been learned.
-
-		signatures = SignatureContainer(5);
+		
 		#signatures.delete_loc_files()
-
 		learn_location();
 		recognize_location();
-	
-	# FILL IN: spin robot or sonar to capture a signature and store it in ls
-	def characterize_location(self, ls):
-		print "TODO:    You should implement the function that captures a signature."
+
+	def characterize_location(self):
+		# TODO make the signature angle invariant
+		ls = LocationSignature()
 		for i in range(len(ls.sig)):
-			ls.sig[i] = random.randint(0, 255)
+			robot.rotateSonar()
+			self.depth = self.robot.ultraSonic.getValue()
+			ls.sig[i] = self.depth
+		return ls
 
 	# FILL IN: compare two signatures
 	def compare_signatures(self, ls1, ls2):
@@ -110,15 +116,15 @@ class PlaceRecognition():
 	# signature into the next available file.
 	def learn_location(self):
 		ls = LocationSignature()
-		characterize_location(ls)
-		idx = signatures.get_free_index();
+		ls = characterize_location()
+		idx = self.signatures.get_free_index();
 		if (idx == -1): # run out of signature files
 			print "\nWARNING:"
 			print "No signature file is available. NOTHING NEW will be learned and stored."
 			print "Please remove some loc_%%.dat files.\n"
 			return
 		
-		signatures.save(ls,idx)
+		self.signatures.save(ls,idx)
 		print "STATUS:  Location " + str(idx) + " learned and saved."
 
 	# This function tries to recognize the current location.
@@ -134,8 +140,7 @@ class PlaceRecognition():
 		characterize_location(ls_obs);
 
 		# FILL IN: COMPARE ls_read with ls_obs and find the best match
-		for idx in range(signatures.size):
+		for idx in range(self.signatures.size):
 			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
-			ls_read = signatures.read(idx);
+			ls_read = self.signatures.read(idx);
 			dist    = compare_signatures(ls_obs, ls_read)
-
