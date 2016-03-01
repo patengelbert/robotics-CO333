@@ -1,15 +1,9 @@
 from robot import Robot
 from navigateToWaypoint import Navigate
-from probabilisticMotion import Particle
 import random
 from math import exp, fabs, isinf, cos, sin, radians, atan2, pi
 from eventTypes import EventType
-
-class Point:
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
-
+from utils import *
 
 class MonteCarloWaypoint(Navigate):
 
@@ -40,10 +34,10 @@ class MonteCarloWaypoint(Navigate):
 		]
 
 		self.waypoints = [\
-			Point(1.8,0.3), \
-			Point(1.8,0.54), \
-			Point(1.38,0.54), \
-			Point(1.38,1.68), \
+			Point(1.8,  0.3), \
+			Point(1.8,  0.54), \
+			Point(1.38, 0.54), \
+			Point(1.38, 1.68), \
 			Point(1.14, 1.68), \
 			Point(1.14, 0.84), \
 			Point(0.84, 0.84), \
@@ -75,13 +69,8 @@ class MonteCarloWaypoint(Navigate):
 	def updateAngle(self, a):
 		newParticles = []
 		for p in self.particles:
-			#newA = p.a + a + self.noise()
-			newA = a
-			while newA > pi:
-				newA -= 2*pi
-			while newA <= -pi:
-				newA += 2*pi
-			newA += self.noise()
+			newA = p.a + a + self.noise()
+			newA = clampAngle(newA)
 			newP = Particle(p.x, p.y, newA, p.p)
 			newParticles.append(newP)
 		self.particles = newParticles
@@ -107,16 +96,13 @@ class MonteCarloWaypoint(Navigate):
 		tX = 0
 		tY = 0
 		tA = 0
-		tempX = 0
-		tempY = 0
 		for p in self.particles:
 			tX += p.x*p.p
 			tY += p.y*p.p
 			tA += p.a*p.p
 		#Update the current position
-		#new_A = atan2(tempY,tempX)
-		#self.theta = tA
-		self.theta = a
+		self.theta = clampAngle(tA)
+		#self.theta = a
 		self.x = tX
 		self.y = tY
 		
@@ -134,7 +120,7 @@ class MonteCarloWaypoint(Navigate):
 	def calculate_likelihood(self, x, y, theta, z):
 		estimatedDepth = self.getMappedDepth(Point(x, y), theta)
 		measuredDepth = z
-		variance = 0.04	# Error in sonar reading
+		variance = 0.02**2	# Error in sonar reading
 		K = 1	# Adds robustness, constant  probability for garbage reading
 		if not isinf(measuredDepth):
 			exponent = fabs(estimatedDepth - measuredDepth)
@@ -163,44 +149,24 @@ class MonteCarloWaypoint(Navigate):
 		self.particles = newParticles
 		self.normalise(self.particles)
 		
-	def intersectLineRay(self, s, e, p, t):
-        	a = e.y - s.y
-        	b = e.x - s.x
-        	c = s.x - p.x
-        	d = s.y - p.y
-        	det = (cos(t)*(e.y - s.y) - sin(t)*(e.x - s.x))
-        	if det == 0.0:
-                	return None
-        	m = ((a*c) - (b*d)) /det
-        	if(m <= 0.0):
-                	return None
-        	intx = cos(t)*m + p.x
-        	inty = sin(t)*m + p.y
-        	if not self.isBetween(s, e, Point(intx, inty)):
-                	return None
-        	return m
-
-
-	def getMappedDepth(self, position, angle):
-        	depth = float('inf')
-        	for line in self.lines:
-                	newDepth = self.intersectLineRay(line[0], line[1], position, angle)
-                	if(newDepth != None and newDepth < depth):
-                        	depth = newDepth
-        	return depth
-
-	def isBetween(self, a, b, c):
-    		crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y)
-    		if abs(crossproduct) > 0.1 : return False   # (or != 0 if using integers)
-
-    		dotproduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y)*(b.y - a.y)
-    		if dotproduct < 0 : return False
-
-    		squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
-    		if dotproduct > squaredlengthba: return False
-
-    		return True
-
+	def intersectLineRay(s, e, p, t):
+		det = (sin(t)*(s.x - e.x) - cos(t)*(s.y - e.y))
+		if(det == 0):
+			return None
+		a = (cos(t)*(p.y - s.y) - sin(t)*(p.x - s.x)) / det
+		d = ((s.y - e.y)*(p.x - s.x) + (e.x - s.x)*(p.y - s.y)) / det
+		if(a < 0.0 or a > 1.0 or d < 0.0):
+			return None
+		return d
+	
+	def getMappedDepth(position, angle):
+		depth = float('inf')
+		for line in lines:
+			newDepth = intersectLineRay(line[0], line[1], position, angle)
+			print str(line[0]) + ', ' + str(line[1]) + ' = ' + str(newDepth)
+			if(newDepth != None and newDepth < depth):
+				depth = newDepth
+		return depth
 	
 	def onUltrasound(params):
 		self.depth = params['distance']

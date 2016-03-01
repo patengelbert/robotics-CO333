@@ -1,5 +1,6 @@
 from robot import Robot
 from math import atan2, sqrt, degrees, fabs, pi, sin, cos, radians
+from utils import clampAngle
 
 class Navigate(object):
 
@@ -22,22 +23,12 @@ class Navigate(object):
 		(targetx, targety) = point
 		distx = targetx - self.x
 		disty = targety - self.y
-		angle = atan2(disty, distx)
-		while angle > pi:
-			angle -= 2*pi
-		while angle <= -pi:
-			angle += 2*pi
-		rotation = angle - self.theta
-		print ('targetx: ' + str(targetx) + ', targety: ' + str(targety) + ', distx = ' + str(distx) + ', disty: ' + str(disty) + ', x: ' + str(self.x) + ', y: ' + str(self.y))
-		print ('angle: ' + str(angle) + ', theta: ' + str(self.theta) + ', rotation: ' + str(rotation))
-		while rotation > pi:
-			print 'angle overflow'
-			rotation -= 2*pi
-		while rotation <= -pi:
-			rotation += 2*pi
-			print 'angle overflow2'
-		print 'Rotating: ' + str(degrees(rotation)) +\
-			 ' from '+ str(self.theta) + ' to heading ' + str(degrees(angle))
+		angle = clampAngle(atan2(disty, distx))
+		rotation = clampAngle(angle - self.theta)
+		#print ('targetx: ' + str(targetx) + ', targety: ' + str(targety) + ', distx = ' + str(distx) + ', disty: ' + str(disty) + ', x: ' + str(self.x) + ', y: ' + str(self.y))
+		#print ('angle: ' + str(angle) + ', theta: ' + str(self.theta) + ', rotation: ' + str(rotation))
+		print 'Rotating ' + str(degrees(rotation)) +\
+			 ' from '+ str(degrees(self.theta)) + ' to heading ' + str(degrees(angle))
 		self.robot.rotate(degrees(rotation))
 		self.robot.wait()
 		
@@ -50,16 +41,12 @@ class Navigate(object):
 			distance = step
 		self.robot.move(distance)
 		
-		print 'Travelling: ' + str(distance) +\
+		print 'Travelling ' + str(distance) +\
 				 'm to location ' + str(point)
-		
 		self.robot.wait()
-		
-		#TODO correct position to work with mcl
 		self.error = not self.updatePosition(distance, angle)
 		
 	def updatePosition(self, d, a):
-		# Update the current position
 		self.theta += a
 		self.x = d*cos(p.a)
 		self.y = d*sin(p.a)
