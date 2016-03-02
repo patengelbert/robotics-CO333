@@ -16,7 +16,17 @@ class Motor:
 		self.threshold = 0.05 # 'Close enough' angle
 		self.initConfig()
 		self.wasRotating = False
+		self.zero = 0
 		interface.motorEnable(id)
+
+
+	def initMotorParams(self): 
+                self.motorParams.maxRotationAcceleration = 10 
+                self.motorParams.maxRotationSpeed = 20 
+                self.motorParams.feedForwardGain = 255/20 
+                self.motorParams.minPWM = 18 
+                self.motorParams.pidParameters.minOutput = -255 
+                self.motorParams.pidParameters.maxOutput = 255
 
 	"""
 	Reads configuration data from file
@@ -75,3 +85,15 @@ class Motor:
 			self.wasRotating = False
 			self.events.invoke(EventType.MOTOR_STOP, {})
 
+	'''
+	Get the current angle to a previously specified zero angle
+	'''
+	def getPosition(self):
+		return self.interface.getMotorAngle(self.id)[0]-self.zero
+	'''
+	Move the motor to a specified angle based on a previously specified zero
+	'''
+	def setPosition(self, angle):
+		self.rotate(angle-self.getPosition())
+		while self.isRotating():
+			pass

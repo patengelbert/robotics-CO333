@@ -116,10 +116,9 @@ class Robot:
 		
 		# Init sonar 
 		self.ultraSonic = UltraSonicSensor(self.interface, 2, self.events, brickpi.SensorType.SENSOR_ULTRASONIC)
-		self.motorSonar = Motor(self.interface, self.events, 3)
-		self.initMotorParams(self.motorSonar.motorParams)
 		
-		# Events added
+		self.setPID(self.pidk_p, self.pidk_i, self.pidk_d)
+
 		self.events.add(EventType.SENSOR_TOUCH, self.sensorAction)
 	
 	###############

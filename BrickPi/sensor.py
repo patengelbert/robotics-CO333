@@ -1,6 +1,10 @@
 #import brickpi
 from eventTypes import EventType, EventState
 from ConfigParser import RawConfigParser
+from motor import Motor
+
+import math
+import time
 
 """
 Base class for sensors, enabling it on the given port
@@ -57,6 +61,13 @@ class UltraSonicSensor(Sensor):
 		self.ultrasonicInfValue = 255
 		super(UltraSonicSensor, self).__init__(*args, **kwargs)
 		self.value = 0
+		self.ultrasonicScans = 20
+		self.motor = Motor(self.interface, self.events, 3)
+		# Zero the motor to the current position
+		self.motor.zero = self.motor.getPosition()
+		self.motor.initMotorParams()
+		self.motor.setPID(120, 20, 0)
+		self.scanData = []
 
 	def check(self):
 		ivalue = self.getValue()
@@ -74,6 +85,23 @@ class UltraSonicSensor(Sensor):
 			ivalue = (ivalue - self.ultrasonicOffset)/100.0
 		return ivalue
 
+	def scan(self):
+		self.scanData = []
+		self.motor.setPosition(math.pi)
+		if self.debug:
+			print 'Starting Scan'
+		self.scanData.append(self.getValue())
+		for i in range(1, self.ultrasonicScans):
+			if self.debug:
+				t = time.clock()
+			self.motor.setPosition(math.pi-(2*math.pi*i)/self.ultrasonicScans)
+			if self.debug:
+				print 'Rotate finished after ' + str(time.clock() - t)
+			self.scanData.append(self.getValue())
+		if self.debug:
+			print 'Finished Scan'
+		self.motor.setPosition(0)
+		
 """
 Implements the 'either' and 'both' positions for two touch sensors
 """
