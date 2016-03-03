@@ -150,9 +150,29 @@ class PlaceRecognition():
 	def recognize_location(self):
 		ls_obs = LocationSignature();
 		characterize_location(ls_obs);
-
+		closest = (0, float('inf'))
+		angle = (0, float('inf'))
 		# FILL IN: COMPARE ls_read with ls_obs and find the best match
 		for idx in range(self.signatures.size):
 			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
 			ls_read = self.signatures.read(idx);
-			dist    = compare_signatures(ls_obs, ls_read)
+			dist    = compare_signatures_invariant(ls_obs, ls_read)
+			if dist < closest[1]:
+				closest = (idx, dist)
+		print "STATUS:	Found current waypoint at " + str(closest[0])
+		curr_loc = self.signatures.read(closest[0])
+		for i in range(0, len(ls1)):
+			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature at offset " + str(i) + "."
+			dist = compare_signatures_variant(curr_loc, ls_obs, i)
+			if dist < angle[1]:
+				angle = (i, dist)
+		print "STATUS:	Found current angle at " + str(angle[0])
+		return {'location': closest[0], 'angle': angle[0]}
+
+	def compare_signatures_variant(self, ls1, ls2, offset):
+		dist = 0
+		if len(ls1) != len(ls2):
+			return -1
+		for i in range(0, len(ls1)):
+			dist += (ls1.sig[i+offset]-ls2.sig[i])**2
+		return dist
