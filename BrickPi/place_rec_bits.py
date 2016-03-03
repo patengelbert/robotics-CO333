@@ -4,6 +4,7 @@
 
 import random
 import os
+from robot import Robot
 
 # Location signature class: stores a signature characterizing one location
 class LocationSignature:
@@ -97,19 +98,30 @@ class PlaceRecognition():
 		learn_location();
 		recognize_location();
 
+	# runs ultraSonic scan and puts values into signature
 	def characterize_location(self):
-		# TODO make the signature angle invariant
 		ls = LocationSignature()
+		robot.ultraSonic.ultrasonicScans = len(ls.sig)
+		robot.ultraSonic.scan()
 		for i in range(len(ls.sig)):
-			robot.rotateSonar()
-			self.depth = self.robot.ultraSonic.getValue()
-			ls.sig[i] = self.depth
+			ls.sig[i] = robot.ultraSonic.scanData[i]
 		return ls
 
-	# FILL IN: compare two signatures
-	def compare_signatures(self, ls1, ls2):
+	# converts signatures to angle invariant arrays and computes a difference between them
+	def compare_signatures_invariant(self, ls1, ls2):
+		if len(ls1.sig) != len(ls2.sig):
+			return -1
 		dist = 0
-		print "TODO:    You should implement the function that compares two signatures."
+		rangeSize = 10
+		rangeA = [0]*math.round(256/rangeSize)
+		rangeB = [0]*math.round(256/rangeSize)
+		for i in range(len(ls1.sig)):
+			a = int(ls1.sig[i]/rangeSize)
+			b = int(ls2.sig[i]/rangeSize)
+			rangeA[a]++
+			rangeB[b]++
+		for i in range(rangeSize):
+			dist += (rangeA[i] - rangeB[i]) ** 2
 		return dist
 
 	# This function characterizes the current location, and stores the obtained 
