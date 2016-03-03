@@ -1,9 +1,11 @@
+
 #!/usr/bin/env python
 # By Jacek Zienkiewicz and Andrew Davison, Imperial College London, 2014
 # Based on original C code by Adrien Angeli, 2009
 
 import random
 import os
+import math
 from robot import Robot
 
 # Location signature class: stores a signature characterizing one location
@@ -69,9 +71,9 @@ class SignatureContainer():
         if os.path.isfile(filename):
             f = open(filename, 'r')
             for i in range(len(ls.sig)):
-                s = f.readline()
+                s = f.readline().rstrip()
                 if (s != ''):
-                    ls.sig[i] = int(s)
+                    ls.sig[i] = float(s)
             f.close();
         else:
             print "WARNING: Signature does not exist."
@@ -95,8 +97,8 @@ class PlaceRecognition():
 		# recognize one of them, if locations have already been learned.
 		
 		#signatures.delete_loc_files()
-		learn_location();
-		recognize_location();
+		#self.learn_location();
+		self.recognize_location();
 
 	# runs ultraSonic scan and puts values into signature
 	def characterize_location(self):
@@ -104,7 +106,10 @@ class PlaceRecognition():
 		robot.ultraSonic.ultrasonicScans = len(ls.sig)
 		robot.ultraSonic.scan()
 		for i in range(len(ls.sig)):
-			ls.sig[i] = robot.ultraSonic.scanData[i]
+			if math.isinf(robot.ultraSonic.scanData[i]):
+				ls.sig[i] = 255
+			else:
+				ls.sig[i] = robot.ultraSonic.scanData[i]
 		return ls
 
 	# converts signatures to angle invariant arrays and computes a difference between them
@@ -112,15 +117,15 @@ class PlaceRecognition():
 		if len(ls1.sig) != len(ls2.sig):
 			return -1
 		dist = 0
-		rangeSize = 10
-		rangeA = [0]*math.round(256/rangeSize)
-		rangeB = [0]*math.round(256/rangeSize)
+		rangeSize = 10.0
+		rangeA = [0]*int(math.ceil(256/rangeSize))
+		rangeB = [0]*int(math.ceil(256/rangeSize))
 		for i in range(len(ls1.sig)):
 			a = int(ls1.sig[i]/rangeSize)
 			b = int(ls2.sig[i]/rangeSize)
-			rangeA[a]++
-			rangeB[b]++
-		for i in range(rangeSize):
+			rangeA[a]+= 1
+			rangeB[b]+= 1
+		for i in range(int(rangeSize)):
 			dist += (rangeA[i] - rangeB[i]) ** 2
 		return dist
 
@@ -128,7 +133,7 @@ class PlaceRecognition():
 	# signature into the next available file.
 	def learn_location(self):
 		ls = LocationSignature()
-		ls = characterize_location()
+		ls = self.characterize_location()
 		idx = self.signatures.get_free_index();
 		if (idx == -1): # run out of signature files
 			print "\nWARNING:"
@@ -148,31 +153,35 @@ class PlaceRecognition():
 	#      actual characterization is the smallest.
 	# 4.   Display the index of the recognized location on the screen
 	def recognize_location(self):
-		ls_obs = LocationSignature();
-		characterize_location(ls_obs);
+		ls_obs = self.characterize_location();
 		closest = (0, float('inf'))
 		angle = (0, float('inf'))
 		# FILL IN: COMPARE ls_read with ls_obs and find the best match
 		for idx in range(self.signatures.size):
 			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
 			ls_read = self.signatures.read(idx);
-			dist    = compare_signatures_invariant(ls_obs, ls_read)
+			dist    = self.compare_signatures_invariant(ls_obs, ls_read)
 			if dist < closest[1]:
 				closest = (idx, dist)
 		print "STATUS:	Found current waypoint at " + str(closest[0])
 		curr_loc = self.signatures.read(closest[0])
-		for i in range(0, len(ls1)):
+		for i in range(0, len(ls_obs.sig)):
 			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature at offset " + str(i) + "."
-			dist = compare_signatures_variant(curr_loc, ls_obs, i)
+			dist = self.compare_signatures_variant(curr_loc, ls_obs, i)
 			if dist < angle[1]:
 				angle = (i, dist)
-		print "STATUS:	Found current angle at " + str(angle[0])
-		return {'location': closest[0], 'angle': angle[0]}
+		print "STATUS:	Found current angle at " + str(angle[0]*360/len(ls_obs.sig))
+		return {'location': closest[0], 'angle': angle[0]*360/len(ls_obs.sig)}
 
 	def compare_signatures_variant(self, ls1, ls2, offset):
 		dist = 0
-		if len(ls1) != len(ls2):
+		if len(ls1.sig) != len(ls2.sig):
 			return -1
-		for i in range(0, len(ls1)):
-			dist += (ls1.sig[i+offset]-ls2.sig[i])**2
+		for i in range(0, len(ls1.sig)):
+			dist += (ls1.sig[(i+offset)%len(ls1.sig)]-ls2.sig[i])**2
 		return dist
+
+if __name__ == '__main__':
+	robot = Robot()
+	p = PlaceRecognition(robot)
+	p.run()

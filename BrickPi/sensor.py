@@ -66,7 +66,7 @@ class UltraSonicSensor(Sensor):
 		# Zero the motor to the current position
 		self.motor.zero = self.motor.getPosition()
 		self.motor.initMotorParams()
-		self.motor.setPID(120, 20, 0)
+		self.motor.setPID(400, 100, 0)
 		self.scanData = []
 
 	def check(self):
