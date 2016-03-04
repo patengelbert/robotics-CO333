@@ -10,7 +10,7 @@ from robot import Robot
 
 # Location signature class: stores a signature characterizing one location
 class LocationSignature:
-    def __init__(self, no_bins = 360):
+    def __init__(self, no_bins = 180):
         self.sig = [0] * no_bins
         
     def print_signature(self):
@@ -66,9 +66,10 @@ class SignatureContainer():
     # Read signature file identified by index. If the file doesn't exist
     # it returns an empty signature.
     def read(self, index):
-        ls = LocationSignature()
+        ls = None
         filename = self.filenames[index]
         if os.path.isfile(filename):
+            ls = LocationSignature()
             f = open(filename, 'r')
             for i in range(len(ls.sig)):
                 s = f.readline().rstrip()
@@ -90,15 +91,22 @@ class PlaceRecognition():
 		
 		self.rotateStep = 2; # Degrees between each reading
 	
-	def run(self):
+	def run(self, option):
 		# Prior to starting learning the locations, it should delete files from previous
 		# learning either manually or by calling signatures.delete_loc_files(). 
 		# Then, either learn a location, until all the locations are learned, or try to
 		# recognize one of them, if locations have already been learned.
 		
-		#signatures.delete_loc_files()
-		#self.learn_location();
-		self.recognize_location();
+		if option== 2:
+			self.signatures.delete_loc_files()
+		elif option == 1:
+			self.learn_location();
+		elif option == 0:
+			self.recognize_location();
+		else:
+			print "Error: Unknown command"	
+			return True
+		return False
 
 	# runs ultraSonic scan and puts values into signature
 	def characterize_location(self):
@@ -125,7 +133,16 @@ class PlaceRecognition():
 			b = int(ls2.sig[i]/rangeSize)
 			rangeA[a]+= 1
 			rangeB[b]+= 1
-		for i in range(int(rangeSize)):
+		
+		print "Range A:\n"
+		for n in rangeA:
+			print( (u'\u2588' * (n)) + "\n")
+
+		print "Range B:\n"
+		for n in rangeB:
+			print( (u'\u2588' * (n)) + "\n")
+
+		for i in range(len(rangeA)):
 			dist += (rangeA[i] - rangeB[i]) ** 2
 		return dist
 
@@ -160,13 +177,14 @@ class PlaceRecognition():
 		for idx in range(self.signatures.size):
 			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
 			ls_read = self.signatures.read(idx);
+			if(ls_read is None):
+				continue
 			dist    = self.compare_signatures_invariant(ls_obs, ls_read)
 			if dist < closest[1]:
 				closest = (idx, dist)
 		print "STATUS:	Found current waypoint at " + str(closest[0])
 		curr_loc = self.signatures.read(closest[0])
 		for i in range(0, len(ls_obs.sig)):
-			print "STATUS:  Comparing signature " + str(idx) + " with the observed signature at offset " + str(i) + "."
 			dist = self.compare_signatures_variant(curr_loc, ls_obs, i)
 			if dist < angle[1]:
 				angle = (i, dist)
@@ -184,4 +202,8 @@ class PlaceRecognition():
 if __name__ == '__main__':
 	robot = Robot()
 	p = PlaceRecognition(robot)
-	p.run()
+	error = False
+	while not error:
+		option = input("Option: Scan=0, Learn=1, Clear=2\n")
+		error = p.run(option)
+
