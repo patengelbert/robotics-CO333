@@ -110,6 +110,7 @@ class PlaceRecognition():
 
 	# runs ultraSonic scan and puts values into signature
 	def characterize_location(self):
+		robot = self.robot
 		ls = LocationSignature()
 		robot.ultraSonic.ultrasonicScans = len(ls.sig)
 		robot.ultraSonic.scan()

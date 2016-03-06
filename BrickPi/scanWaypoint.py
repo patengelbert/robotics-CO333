@@ -28,14 +28,15 @@ class ScanWaypoint(Navigate):
 		wp = self.waypoints[self.idx]
 		self.x = wp.x
 		self.y = wp.y
-		self.a = radians(result['angle'])
+		self.theta = radians(result['angle'])
 	
 	def run(self):
 		self.recognize()
 		for i in range(len(self.waypoints)):
 			if(self.idx >= len(self.waypoints)):
 				self.idx = 0
-			self.waypoint(self.waypoints[idx])
+			wp = self.waypoints[self.idx]
+			self.waypoint( (wp.x, wp.y) )
 			# Beep
 			print '\a'
 			self.idx += 1

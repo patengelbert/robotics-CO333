@@ -39,9 +39,9 @@ class Navigate(object):
 		self.updatePosition(distance, rotation)
 		
 	def updatePosition(self, d, a):
-		self.theta += a
-		self.x = d*cos(p.a)
-		self.y = d*sin(p.a)
+		self.theta = clampAngle(self.theta + a)
+		self.x += d*cos(self.theta)
+		self.y += d*sin(self.theta)
 		return True
 
 if __name__ == '__main__':
