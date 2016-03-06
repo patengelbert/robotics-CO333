@@ -68,32 +68,34 @@ class UltraSonicSensor(Sensor):
 		self.motor.initMotorParams()
 		self.motor.setPID(400, 100, 0)
 		self.scanData = []
-		self.raw_value = 255
+		self.rawValue = 255
 
 	def check(self):
-		ivalue = self.getValue()
-		
-		if(self.value != ivalue):
-			if ivalue is not self.ultrasonicInfValue:
-				self.value = ivalue
-				self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':ivalue})
+		oldValue = self.rawValue
+		fvalue = getValue();
+		if(self.rawValue != oldValue):
+			if self.rawValue is not self.ultrasonicInfValue:
+				self.events.invoke(EventType.SENSOR_ULTRASOUND, {'distance':fvalue})
+	
+	def getRawValue(self):
+		self.rawValue = self.interface.getSensorValue(self.port)[0]
+		return self.rawValue
 	
 	def getValue(self):
-		ivalue = self.interface.getSensorValue(self.port)[0]
-		self.raw_value = ivalue
+		ivalue = self.getRawValue()
 		if ivalue == () or ivalue == None or ivalue == self.ultrasonicInfValue:
-			ivalue = float('inf')
+			fvalue = float('inf')
 		else:
-			ivalue = (ivalue - self.ultrasonicOffset)/100.0
-		return ivalue
+			fvalue = (ivalue - self.ultrasonicOffset)/100.0
+		self.value = fvalue
+		return fvalue
 
 	def scan(self):
 		self.scanData = []
 		self.motor.setPosition(math.pi)
 		if self.debug:
 			print 'Starting Scan'
-		self.getValue()
-		self.scanData.append(self.raw_value)
+		self.scanData.append(self.getRawValue())
 		for i in range(1, self.ultrasonicScans):
 			if self.debug:
 				t = time.clock()
@@ -101,8 +103,7 @@ class UltraSonicSensor(Sensor):
 			if self.debug:
 				#print 'Rotate finished after ' + str(time.clock() - t)
 				pass
-			self.getValue()
-			self.scanData.append(self.raw_value)
+			self.scanData.append(self.getRawValue())
 		if self.debug:
 			print 'Finished Scan'
 		self.motor.setPosition(0)

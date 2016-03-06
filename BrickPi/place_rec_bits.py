@@ -126,21 +126,22 @@ class PlaceRecognition():
 			return -1
 		dist = 0
 		rangeSize = 10.0
-		rangeA = [0]*int(math.ceil(256/rangeSize))
-		rangeB = [0]*int(math.ceil(256/rangeSize))
+		rangeLen = int(math.ceil(256/rangeSize))
+		rangeA = [0]*rangeLen
+		rangeB = [0]*rangeLen
 		for i in range(len(ls1.sig)):
 			a = int(ls1.sig[i]/rangeSize)
 			b = int(ls2.sig[i]/rangeSize)
 			rangeA[a]+= 1
 			rangeB[b]+= 1
 		
-		print "Range A:\n"
-		for n in rangeA:
-			print( (u'\u2588' * (n)) + "\n")
+		#print "Range A:\n"
+		#for n in rangeA:
+		#	print( (u'\u2588' * (n)) + "\n")
 
-		print "Range B:\n"
-		for n in rangeB:
-			print( (u'\u2588' * (n)) + "\n")
+		#print "Range B:\n"
+		#for n in rangeB:
+		#	print( (u'\u2588' * (n)) + "\n")
 
 		for i in range(len(rangeA)):
 			dist += (rangeA[i] - rangeB[i]) ** 2
